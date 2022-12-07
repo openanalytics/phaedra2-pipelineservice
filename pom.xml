@@ -1,0 +1,23 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>eu.openanalytics.phaedra</groupId>
+        <artifactId>phaedra2-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../phaedra2-parent</relativePath>
+    </parent>
+    <packaging>pom</packaging>
+    
+	<artifactId>phaedra2-pipelineservice</artifactId>
+	<name>Pipeline Service</name>
+
+	<properties>
+		<java.version>16</java.version>
+	</properties>
+	  
+	<modules>
+		<module>server</module>
+		<module>phaedra2-pipelineservice-dto</module>
+	</modules>
+</project>

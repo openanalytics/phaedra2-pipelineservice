@@ -1,0 +1,103 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: fmichielssen
+      changes:
+        - createTable:
+            tableName: pipeline_definition
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    unique: true
+              - column:
+                  name: version_number
+                  type: TEXT
+              - column:
+                  name: name
+                  type: TEXT
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: config
+                  type: TEXT
+              - column:
+                  name: created_on
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: created_by
+                  type: TEXT
+              - column:
+                  name: updated_on
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: updated_by
+                  type: TEXT
+        - createTable:
+            tableName: pipeline_execution
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    unique: true
+              - column:
+                  name: pipeline_id
+                  type: BIGINT
+                  constraints:
+                    foreignKeyName: pipeline_id_fk
+                    referencedTableName: pipeline_definition
+                    referencedColumnNames: id
+              - column:
+                  name: version_number
+                  type: TEXT
+              - column:
+                  name: status
+                  type: TEXT
+              - column:
+                  name: next_step
+                  type: INTEGER
+              - column:
+                  name: created_on
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: created_by
+                  type: TEXT
+              - column:
+                  name: updated_on
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: updated_by
+                  type: TEXT
+        - createTable:
+            tableName: pipeline_execution_log
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    unique: true
+              - column:
+                  name: pipeline_execution_id
+                  type: BIGINT
+                  constraints:
+                    foreignKeyName: pipeline_exec_id_fk
+                    referencedTableName: pipeline_execution
+                    referencedColumnNames: id
+              - column:
+                  name: log_date
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: step_nr
+                  type: INTEGER
+              - column:
+                  name: message
+                  type: TEXT
+              - column:
+                  name: message_type
+                  type: TEXT
