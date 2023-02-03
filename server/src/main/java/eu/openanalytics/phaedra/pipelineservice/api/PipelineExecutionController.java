@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import eu.openanalytics.phaedra.pipelineservice.dto.PipelineExecution;
+import eu.openanalytics.phaedra.pipelineservice.dto.PipelineExecutionLog;
 import eu.openanalytics.phaedra.pipelineservice.service.PipelineExecutionService;
 
 @RestController
@@ -21,6 +22,11 @@ public class PipelineExecutionController {
 	@GetMapping(value = "/execution/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PipelineExecution> getPipelineExecution(@PathVariable long id) {
 		return ResponseEntity.of(pipelineExecutionService.findById(id));
+	}
+	
+	@GetMapping(value = "/execution/{id}/log", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<PipelineExecutionLog>> getPipelineExecutionLog(@PathVariable long id) {
+		return ResponseEntity.ok(pipelineExecutionService.getLog(id));
 	}
 	
 	@GetMapping(value = "/executions", produces = MediaType.APPLICATION_JSON_VALUE)

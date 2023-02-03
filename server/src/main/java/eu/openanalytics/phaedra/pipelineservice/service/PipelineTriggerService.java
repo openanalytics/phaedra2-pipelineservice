@@ -23,10 +23,10 @@ import eu.openanalytics.phaedra.pipelineservice.model.config.PipelineStep;
 public class PipelineTriggerService {
 
 	@Autowired
-	private PipelineDefinitionService pipelineDefinitionService;
+	private PipelineDefinitionService definitionService;
 	
 	@Autowired
-	private PipelineExecutionService pipelineExecutionService;
+	private PipelineExecutionService executionService;
 	
 	@Autowired
 	private ActionRegistry actionRegistry;
@@ -48,10 +48,10 @@ public class PipelineTriggerService {
 	}
 	
 	public void registerTrigger(Long definitionId, Long executionId, int stepNr) {
-		PipelineDefinition def = pipelineDefinitionService.findById(definitionId)
+		PipelineDefinition def = definitionService.findById(definitionId)
 				.orElseThrow(() -> new IllegalArgumentException(String.format("Invalid pipeline ID: %d", definitionId)));
 		
-		PipelineExecution exec = executionId == null ? null : pipelineExecutionService.findById(executionId).orElse(null);
+		PipelineExecution exec = executionId == null ? null : executionService.findById(executionId).orElse(null);
 		PipelineExecutionContext context = PipelineExecutionContext.build(def, exec);
 		
 		RegisteredTrigger trigger = new RegisteredTrigger();
@@ -109,17 +109,18 @@ public class PipelineTriggerService {
 				(trigger.descriptor == null ? null : trigger.descriptor.getType()), trigger.pipelineId, trigger.stepNr));
 
 		// Look up the pipeline and parse its config.
-		PipelineDefinition def = pipelineDefinitionService.findById(trigger.pipelineId)
+		PipelineDefinition def = definitionService.findById(trigger.pipelineId)
 				.orElseThrow(() -> new IllegalArgumentException(String.format("Invalid pipeline ID: %d", trigger.pipelineId)));
 		
 		// Look up or create a PipelineExecution.
 		PipelineExecution exec = null;
 		
 		if (trigger.stepNr == PIPELINE_FIRST_STEP) {
-			exec = pipelineExecutionService.createNew(trigger.pipelineId);
+			exec = executionService.createNew(trigger.pipelineId);
+			executionService.log(exec.getId(), trigger.stepNr, "New execution started");
 			// Note: the trigger for step 0 always remains active, as it spawns new pipeline executions. 
 		} else {
-			exec = pipelineExecutionService.findById(trigger.executionId)
+			exec = executionService.findById(trigger.executionId)
 					.orElseThrow(() -> new IllegalArgumentException(String.format("Invalid pipeline execution ID: %d", trigger.executionId)));
 			
 			// Deactivate the step trigger that was just fired.
@@ -131,7 +132,8 @@ public class PipelineTriggerService {
 		if (trigger.stepNr == PIPELINE_COMPLETE_STEP) {
 			// No further steps to invoke: the pipeline is completed.
 			exec.setStatus(PipelineExecutionStatus.COMPLETED);
-			pipelineExecutionService.update(exec);
+			executionService.update(exec);
+			executionService.log(exec.getId(), trigger.stepNr, "Execution completed");
 			logger.debug(String.format("Pipeline %d is now completed", trigger.pipelineId));
 			return;
 		}
@@ -144,7 +146,7 @@ public class PipelineTriggerService {
 		} else {
 			exec.setStatus(PipelineExecutionStatus.RUNNING);
 			exec.setCurrentStep(trigger.stepNr);
-			pipelineExecutionService.update(exec);
+			executionService.update(exec);
 		}
 		
 		// Activate the trigger for the next step.
@@ -154,6 +156,7 @@ public class PipelineTriggerService {
 		
 		// Finally, invoke the action corresponding to the current step.
 		IAction actionToInvoke = actionRegistry.resolve(stepToInvoke.getAction());
+		executionService.log(exec.getId(), trigger.stepNr, String.format("Invoking action: %s", stepToInvoke.getAction().getType()));
 		actionToInvoke.invoke(context);
 	}
 	

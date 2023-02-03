@@ -12,8 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import eu.openanalytics.phaedra.pipelineservice.dto.LogMessageType;
 import eu.openanalytics.phaedra.pipelineservice.dto.PipelineExecution;
+import eu.openanalytics.phaedra.pipelineservice.dto.PipelineExecutionLog;
 import eu.openanalytics.phaedra.pipelineservice.dto.PipelineExecutionStatus;
+import eu.openanalytics.phaedra.pipelineservice.repo.PipelineExecutionLogRepo;
 import eu.openanalytics.phaedra.pipelineservice.repo.PipelineExecutionRepo;
 import eu.openanalytics.phaedra.util.auth.IAuthorizationService;
 
@@ -22,7 +25,10 @@ import eu.openanalytics.phaedra.util.auth.IAuthorizationService;
 public class PipelineExecutionService {
 
 	@Autowired
-	private PipelineExecutionRepo pipelineExecutionRepo;
+	private PipelineExecutionRepo executionRepo;
+	
+	@Autowired
+	private PipelineExecutionLogRepo logRepo;
 	
 	@Autowired
 	private IAuthorizationService authService;
@@ -41,19 +47,19 @@ public class PipelineExecutionService {
 		execution.setStatus(PipelineExecutionStatus.CREATED);
 		execution.setCurrentStep(0);
 		validate(execution, true);
-		return pipelineExecutionRepo.save(execution);
+		return executionRepo.save(execution);
 	}
 
 	public Optional<PipelineExecution> findById(long id) {
-		return pipelineExecutionRepo.findById(id);
+		return executionRepo.findById(id);
 	}
 	
 	public boolean exists(long id) {
-		return pipelineExecutionRepo.existsById(id);
+		return executionRepo.existsById(id);
 	}
 	
 	public Optional<PipelineExecution> findFirst(Predicate<PipelineExecution> filter) {
-		for (PipelineExecution exec: pipelineExecutionRepo.findAll()) {
+		for (PipelineExecution exec: executionRepo.findAll()) {
 			if (filter.test(exec)) return Optional.of(exec);
 		}
 		return Optional.empty();
@@ -61,15 +67,33 @@ public class PipelineExecutionService {
 	
 	public List<PipelineExecution> findAll(Predicate<PipelineExecution> filter) {
 		List<PipelineExecution> matches = new ArrayList<>();
-		for (PipelineExecution exec: pipelineExecutionRepo.findAll()) {
+		for (PipelineExecution exec: executionRepo.findAll()) {
 			if (filter == null || filter.test(exec)) matches.add(exec);
 		}
 		return matches;
 	}
 	
+	public void log(long executionId, int stepNr, String message) {
+		PipelineExecutionLog log = new PipelineExecutionLog();
+		log.setLogDate(new Date());
+		log.setPipelineExecutionId(executionId);
+		log.setStepNr(stepNr);
+		log.setMessage(message);
+		log.setMessageType(LogMessageType.Info.name());
+		logRepo.save(log);
+	}
+	
+	public void log(PipelineExecutionLog log) {
+		logRepo.save(log);
+	}
+	
+	public List<PipelineExecutionLog> getLog(long executionId) {
+		return logRepo.findAllByPipelineExecutionId(executionId);
+	}
+	
 	public PipelineExecution update(PipelineExecution execution) {
 		// Look up the existing record
-		PipelineExecution existingExecution = pipelineExecutionRepo
+		PipelineExecution existingExecution = executionRepo
 				.findById(execution.getId())
 				.orElseThrow(() -> new IllegalArgumentException("Pipeline execution not found with ID " + execution.getId()));
 
@@ -84,7 +108,7 @@ public class PipelineExecutionService {
 		existingExecution.setUpdatedBy(authService.getCurrentPrincipalName());
 		
 		validate(existingExecution, false);
-		return pipelineExecutionRepo.save(existingExecution);
+		return executionRepo.save(existingExecution);
 	}
 	
 	private void validate(PipelineExecution exec, boolean isNew) {
