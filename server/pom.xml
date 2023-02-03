@@ -13,6 +13,11 @@
 	<artifactId>phaedra2-pipelineservice-server</artifactId>
 	<name>phaedra2-pipelineservice-server</name>
 
+	<properties>
+		<docker.repoPrefix/>
+		<docker.imageName>${project.parent.artifactId}</docker.imageName>
+	</properties>
+	
 	<dependencies>
 		<!-- Phaedra dependencies -->
 		<dependency>
