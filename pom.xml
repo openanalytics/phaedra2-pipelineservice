@@ -17,8 +17,8 @@
 	</properties>
 	  
 	<modules>
+		<module>dto</module>
 		<module>server</module>
-		<module>phaedra2-pipelineservice-dto</module>
 	</modules>
 	
     <!-- We cannot specify this in the parent POM, as the repositories are needed to fetch the parent pom.    -->
