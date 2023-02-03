@@ -1,5 +1,7 @@
 package eu.openanalytics.phaedra.pipelineservice.api;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,6 +28,11 @@ public class PipelineDefinitionController {
 		return ResponseEntity.of(pipelineDefinitionService.findById(id));
 	}
 
+	@GetMapping(value = "/pipelines", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<PipelineDefinition>> getAllPipelineDefinitions() {
+		return ResponseEntity.ok(pipelineDefinitionService.findAll(null));
+	}
+	
 	@PostMapping(value = "/pipeline", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PipelineDefinition> createPipelineDefinition(@RequestBody PipelineDefinition definition) {
 		try {

@@ -1,5 +1,7 @@
 package eu.openanalytics.phaedra.pipelineservice.api;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,5 +23,8 @@ public class PipelineExecutionController {
 		return ResponseEntity.of(pipelineExecutionService.findById(id));
 	}
 	
-	
+	@GetMapping(value = "/executions", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<PipelineExecution>> getAllPipelineExecutions() {
+		return ResponseEntity.ok(pipelineExecutionService.findAll(null));
+	}	
 }

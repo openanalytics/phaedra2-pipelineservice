@@ -57,7 +57,7 @@ public class PipelineDefinitionService {
 	public List<PipelineDefinition> findAll(Predicate<PipelineDefinition> filter) {
 		List<PipelineDefinition> matches = new ArrayList<>();
 		for (PipelineDefinition def: pipelineDefinitionRepo.findAll()) {
-			if (filter.test(def)) matches.add(def);
+			if (filter == null || filter.test(def)) matches.add(def);
 		}
 		return matches;
 	}

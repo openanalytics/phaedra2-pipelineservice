@@ -62,7 +62,7 @@ public class PipelineExecutionService {
 	public List<PipelineExecution> findAll(Predicate<PipelineExecution> filter) {
 		List<PipelineExecution> matches = new ArrayList<>();
 		for (PipelineExecution exec: pipelineExecutionRepo.findAll()) {
-			if (filter.test(exec)) matches.add(exec);
+			if (filter == null || filter.test(exec)) matches.add(exec);
 		}
 		return matches;
 	}
