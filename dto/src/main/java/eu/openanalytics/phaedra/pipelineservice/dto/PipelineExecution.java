@@ -10,10 +10,9 @@ public class PipelineExecution {
 	private Long id;
     
 	private Long pipelineId;
-    private String versionNumber;
     
-    private String status;
-    private int nextStep;
+    private PipelineExecutionStatus status;
+    private int currentStep;
     
     private Date createdOn;
     private String createdBy;
@@ -32,23 +31,17 @@ public class PipelineExecution {
 	public void setPipelineId(Long pipelineId) {
 		this.pipelineId = pipelineId;
 	}
-	public String getVersionNumber() {
-		return versionNumber;
-	}
-	public void setVersionNumber(String versionNumber) {
-		this.versionNumber = versionNumber;
-	}
-	public String getStatus() {
+	public PipelineExecutionStatus getStatus() {
 		return status;
 	}
-	public void setStatus(String status) {
+	public void setStatus(PipelineExecutionStatus status) {
 		this.status = status;
 	}
-	public int getNextStep() {
-		return nextStep;
+	public int getCurrentStep() {
+		return currentStep;
 	}
-	public void setNextStep(int nextStep) {
-		this.nextStep = nextStep;
+	public void setCurrentStep(int currentStep) {
+		this.currentStep = currentStep;
 	}
 	public Date getCreatedOn() {
 		return createdOn;

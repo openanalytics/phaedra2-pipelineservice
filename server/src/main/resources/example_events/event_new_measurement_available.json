@@ -1,0 +1,4 @@
+{
+	"type": "newMeasurementAvailable",
+	"location": "s3://path/to/new/measurement"
+}

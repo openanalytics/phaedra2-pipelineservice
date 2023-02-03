@@ -1,0 +1,32 @@
+{
+	"steps": [
+		{
+			"trigger": {
+				"type": "EventListener",
+				"config": { "topic": "datacapture", "key": "newMeasurementAvailable", "pattern": ".*test.*" }
+			},
+			"action": {
+				"type": "CaptureMeasurement"
+			}
+		},
+		{
+			"trigger": {
+				"type": "EventListener",
+				"config": { "topic": "datacapture", "key": "measurementCaptured", "pattern": ".*test.*" }
+			},
+			"action": {
+				"type": "LinkPlateDefinition"
+			}
+		},
+		{
+			"trigger": {
+				"type": "EventListener",
+				"config": { "topic": "plate", "key": "plateLinked" }
+			},
+			"action": {
+				"type": "CalculateProtocol",
+				"config": { "id": 123 }
+			}
+		}
+	] 
+}

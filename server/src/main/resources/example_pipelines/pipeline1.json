@@ -1,0 +1,13 @@
+{
+	"steps": [
+		{ 
+			"trigger": {
+				"type": "EventListener",
+				"config": { "topic": "datacapture", "key": "newMeasurementAvailable", "pattern": ".*test.*" }
+			},
+			"action": {
+				"type": "CaptureMeasurement"
+			}
+		}
+	]
+}

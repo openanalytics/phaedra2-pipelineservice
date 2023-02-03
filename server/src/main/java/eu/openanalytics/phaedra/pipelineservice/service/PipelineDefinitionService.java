@@ -1,8 +1,12 @@
 package eu.openanalytics.phaedra.pipelineservice.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
+
+import javax.annotation.PostConstruct;
 
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
@@ -11,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import eu.openanalytics.phaedra.pipelineservice.dto.PipelineDefinition;
+import eu.openanalytics.phaedra.pipelineservice.dto.PipelineDefinitionStatus;
 import eu.openanalytics.phaedra.pipelineservice.repo.PipelineDefinitionRepo;
 import eu.openanalytics.phaedra.util.auth.IAuthorizationService;
 import eu.openanalytics.phaedra.util.versioning.VersionUtils;
@@ -22,9 +27,17 @@ public class PipelineDefinitionService {
 	private PipelineDefinitionRepo pipelineDefinitionRepo;
 	
 	@Autowired
+	private PipelineTriggerService pipelineTriggerService;
+	
+	@Autowired
 	private IAuthorizationService authService;
 	
 	private ModelMapper modelMapper = new ModelMapper();
+	
+	@PostConstruct
+	public void initializeDefinitionTriggers() {
+		pipelineDefinitionRepo.findAll().forEach(pd -> handleStatusChanged(pd));
+	}
 	
 	public Optional<PipelineDefinition> findById(long id) {
 		return pipelineDefinitionRepo.findById(id);
@@ -32,6 +45,21 @@ public class PipelineDefinitionService {
 	
 	public List<PipelineDefinition> findByName(String name) {
 		return pipelineDefinitionRepo.findAllByName(name);
+	}
+	
+	public Optional<PipelineDefinition> findFirst(Predicate<PipelineDefinition> filter) {
+		for (PipelineDefinition def: pipelineDefinitionRepo.findAll()) {
+			if (filter.test(def)) return Optional.of(def);
+		}
+		return Optional.empty();
+	}
+	
+	public List<PipelineDefinition> findAll(Predicate<PipelineDefinition> filter) {
+		List<PipelineDefinition> matches = new ArrayList<>();
+		for (PipelineDefinition def: pipelineDefinitionRepo.findAll()) {
+			if (filter.test(def)) matches.add(def);
+		}
+		return matches;
 	}
 	
 	public PipelineDefinition createNew(PipelineDefinition definition) {
@@ -56,6 +84,8 @@ public class PipelineDefinitionService {
 
 		authService.performOwnershipCheck(existingDefinition.getCreatedBy());
 		
+		boolean statusChanged = definition.getStatus() != existingDefinition.getStatus();
+		
 		// Map the updated fields onto the existing definition
 		modelMapper.typeMap(PipelineDefinition.class, PipelineDefinition.class)
 			.setPropertyCondition(Conditions.isNotNull())
@@ -65,7 +95,10 @@ public class PipelineDefinitionService {
 		existingDefinition.setUpdatedOn(new Date());
 		existingDefinition.setUpdatedBy(authService.getCurrentPrincipalName());
 		validate(existingDefinition, false);
-		return pipelineDefinitionRepo.save(existingDefinition);
+
+		PipelineDefinition newDefinition = pipelineDefinitionRepo.save(existingDefinition);
+		if (statusChanged) handleStatusChanged(newDefinition);
+		return newDefinition;
 	}
 	
 	private void validate(PipelineDefinition def, boolean isNew) {
@@ -74,5 +107,20 @@ public class PipelineDefinitionService {
 		Assert.hasText(def.getCreatedBy(), "Pipeline definition creator cannot be empty");
 		Assert.notNull(def.getCreatedOn(), "Pipeline definition creation date cannot be null");
 		Assert.isTrue(VersionUtils.isValidVersionNumber(def.getVersionNumber()), "Pipeline definition must have a valid version number");
+		//TODO Parse and validate config
 	}
+	
+	/**
+	 * If the PipelineDefinition has status ENABLED, schedule its trigger(s).
+	 * If it has status DISABLED, unschedule all of its triggers.
+	 */
+	private void handleStatusChanged(PipelineDefinition definition) {
+		if (definition.getStatus() == PipelineDefinitionStatus.ENABLED) {
+			pipelineTriggerService.registerPipelineTrigger(definition.getId());
+		} else {
+			pipelineTriggerService.unregisterPipelineTrigger(definition.getId());
+		}
+		
+	}
+	
 }

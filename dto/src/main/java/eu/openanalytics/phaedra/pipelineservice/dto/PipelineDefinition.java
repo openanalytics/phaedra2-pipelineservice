@@ -30,6 +30,8 @@ public class PipelineDefinition {
     @JsonRawValue
     private String config;
     
+    private PipelineDefinitionStatus status;
+    
     private Date createdOn;
     private String createdBy;
     private Date updatedOn;
@@ -64,6 +66,12 @@ public class PipelineDefinition {
 	}
 	public void setConfig(String config) {
 		this.config = config;
+	}
+	public PipelineDefinitionStatus getStatus() {
+		return status;
+	}
+	public void setStatus(PipelineDefinitionStatus status) {
+		this.status = status;
 	}
 	public Date getCreatedOn() {
 		return createdOn;

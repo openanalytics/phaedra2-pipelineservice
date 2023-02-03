@@ -25,6 +25,9 @@ databaseChangeLog:
                   name: config
                   type: TEXT
               - column:
+                  name: status
+                  type: TEXT
+              - column:
                   name: created_on
                   type: TIMESTAMP WITHOUT TIME ZONE
               - column:
@@ -53,13 +56,10 @@ databaseChangeLog:
                     referencedTableName: pipeline_definition
                     referencedColumnNames: id
               - column:
-                  name: version_number
-                  type: TEXT
-              - column:
                   name: status
                   type: TEXT
               - column:
-                  name: next_step
+                  name: current_step
                   type: INTEGER
               - column:
                   name: created_on
