@@ -36,4 +36,54 @@
 		</dependency>
 	</dependencies>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<!-- Allows building a Docker image -->
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.37.0</version>
+				<configuration>
+					<verbose>true</verbose>
+					<images>
+						<image>
+							<name>${docker.repoPrefix}${docker.imageName}</name>
+							<build>
+								<dockerFile>${project.basedir}/Dockerfile.app</dockerFile>
+								<tags>
+									<tag>${project.version}</tag>
+								</tags>
+								<args>
+									<JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
+								</args>
+							</build>
+						</image>
+						<image>
+							<name>${docker.repoPrefix}${docker.imageName}.liquibase</name>
+							<build>
+								<dockerFile>${project.basedir}/Dockerfile.db</dockerFile>
+								<tags>
+									<tag>${project.version}</tag>
+								</tags>
+							</build>
+						</image>
+					</images>
+				</configuration>
+				<executions>
+					<execution>
+						<id>default</id>
+						<phase>install</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>
