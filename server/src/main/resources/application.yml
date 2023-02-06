@@ -3,13 +3,8 @@ server:
     context-path: /phaedra/pipeline-service
 
 spring:
-  cloud:
-    kubernetes:
-      enabled: false
   application:
     name: phaedra-pipeline-service
-  liquibase:
-    enabled: false
   security:
     oauth2:
       resourceserver:
