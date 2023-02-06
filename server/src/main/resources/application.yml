@@ -5,6 +5,8 @@ server:
 spring:
   application:
     name: phaedra-pipeline-service
+  liquibase:
+    enabled: false
   security:
     oauth2:
       resourceserver:
