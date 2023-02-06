@@ -1,12 +1,31 @@
-logging:
-  level:
-    root: INFO
-    eu.openanalytics.phaedra: DEBUG
+server:
+  servlet:
+    context-path: /phaedra/pipeline-service
 
 spring:
+  cloud:
+    kubernetes:
+      enabled: false
+  application:
+    name: phaedra-pipeline-service
+  liquibase:
+    enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost
+  jackson:
+    serialization:
+      indent_output: true
   kafka:
     producer:
       bootstrap-servers: localhost:9092
     consumer:
       bootstrap-servers: localhost:9092
       group-id: phaedra2
+
+logging:
+  level:
+    root: INFO
+    eu.openanalytics.phaedra: DEBUG
