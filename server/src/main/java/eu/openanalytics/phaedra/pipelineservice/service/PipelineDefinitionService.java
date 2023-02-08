@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,13 +86,16 @@ public class PipelineDefinitionService {
 		authService.performOwnershipCheck(existingDefinition.getCreatedBy());
 		
 		boolean statusChanged = definition.getStatus() != existingDefinition.getStatus();
+		boolean configChanged = !StringUtils.equals(definition.getConfig(), existingDefinition.getConfig());
 		
 		// Map the updated fields onto the existing definition
 		modelMapper.typeMap(PipelineDefinition.class, PipelineDefinition.class)
 			.setPropertyCondition(Conditions.isNotNull())
 			.map(definition, existingDefinition);
 		
-		existingDefinition.setVersionNumber(VersionUtils.generateNewVersion(existingDefinition.getVersionNumber()));
+		if (configChanged) {
+			existingDefinition.setVersionNumber(VersionUtils.generateNewVersion(existingDefinition.getVersionNumber()));
+		}
 		existingDefinition.setUpdatedOn(new Date());
 		existingDefinition.setUpdatedBy(authService.getCurrentPrincipalName());
 		validate(existingDefinition, false);
@@ -99,6 +103,13 @@ public class PipelineDefinitionService {
 		PipelineDefinition newDefinition = pipelineDefinitionRepo.save(existingDefinition);
 		if (statusChanged) handleStatusChanged(newDefinition);
 		return newDefinition;
+	}
+	
+	public void delete(long definitionId) {
+		PipelineDefinition def = findById(definitionId).orElseThrow(() -> new IllegalArgumentException("Invalid pipeline ID: " + definitionId));
+		authService.performOwnershipCheck(def.getCreatedBy());
+		
+		pipelineDefinitionRepo.deleteById(definitionId);
 	}
 	
 	private void validate(PipelineDefinition def, boolean isNew) {
