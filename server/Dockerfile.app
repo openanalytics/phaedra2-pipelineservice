@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/openjdk:16-jdk-slim-buster
+FROM registry.openanalytics.eu/library/openjdk:16-jdk-slim-buster
 
 ARG JAR_FILE
 ADD $JAR_FILE /opt/phaedra/app.jar
