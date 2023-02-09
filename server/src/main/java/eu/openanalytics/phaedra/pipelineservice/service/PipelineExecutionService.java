@@ -18,10 +18,8 @@ import eu.openanalytics.phaedra.pipelineservice.dto.PipelineExecutionLog;
 import eu.openanalytics.phaedra.pipelineservice.dto.PipelineExecutionStatus;
 import eu.openanalytics.phaedra.pipelineservice.repo.PipelineExecutionLogRepo;
 import eu.openanalytics.phaedra.pipelineservice.repo.PipelineExecutionRepo;
-import eu.openanalytics.phaedra.util.auth.IAuthorizationService;
 
 @Service
-//TODO This service is checking pipeline ownership against current auth, won't work with M2M
 public class PipelineExecutionService {
 
 	@Autowired
@@ -30,10 +28,12 @@ public class PipelineExecutionService {
 	@Autowired
 	private PipelineExecutionLogRepo logRepo;
 	
-	@Autowired
-	private IAuthorizationService authService;
+//	@Autowired
+//	private IAuthorizationService authService;
 	
 	private ModelMapper modelMapper = new ModelMapper();
+	
+	private static final String USERNAME_SYSTEM = "System";
 	
 	public PipelineExecution createNew(Long pipelineId) {
 		PipelineExecution execution = new PipelineExecution();
@@ -43,7 +43,7 @@ public class PipelineExecutionService {
 	
 	public PipelineExecution createNew(PipelineExecution execution) {
 		execution.setCreatedOn(new Date());
-		execution.setCreatedBy(authService.getCurrentPrincipalName());
+		execution.setCreatedBy(USERNAME_SYSTEM);
 		execution.setStatus(PipelineExecutionStatus.CREATED);
 		execution.setCurrentStep(0);
 		validate(execution, true);
@@ -97,7 +97,7 @@ public class PipelineExecutionService {
 				.findById(execution.getId())
 				.orElseThrow(() -> new IllegalArgumentException("Pipeline execution not found with ID " + execution.getId()));
 
-		authService.performOwnershipCheck(existingExecution.getCreatedBy());
+//		authService.performOwnershipCheck(existingExecution.getCreatedBy());
 		
 		// Map the updated fields onto the existing definition
 		modelMapper.typeMap(PipelineExecution.class, PipelineExecution.class)
@@ -105,7 +105,7 @@ public class PipelineExecutionService {
 			.map(execution, existingExecution);
 		
 		existingExecution.setUpdatedOn(new Date());
-		existingExecution.setUpdatedBy(authService.getCurrentPrincipalName());
+		existingExecution.setUpdatedBy(USERNAME_SYSTEM);
 		
 		validate(existingExecution, false);
 		return executionRepo.save(existingExecution);
