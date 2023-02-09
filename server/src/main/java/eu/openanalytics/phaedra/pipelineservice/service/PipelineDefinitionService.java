@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
@@ -37,7 +40,11 @@ public class PipelineDefinitionService {
 	
 	@PostConstruct
 	public void initializeDefinitionTriggers() {
-		pipelineDefinitionRepo.findAll().forEach(pd -> handleStatusChanged(pd));
+		ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+		executorService.schedule(() -> {
+			pipelineDefinitionRepo.findAll().forEach(pd -> handleStatusChanged(pd));
+			executorService.shutdown();
+		}, 10, TimeUnit.SECONDS);
 	}
 	
 	public Optional<PipelineDefinition> findById(long id) {
