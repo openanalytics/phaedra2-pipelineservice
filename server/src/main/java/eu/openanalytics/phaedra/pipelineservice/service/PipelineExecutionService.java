@@ -73,6 +73,10 @@ public class PipelineExecutionService {
 		return matches;
 	}
 	
+	public List<PipelineExecution> findBetween(Date from, Date to) {
+		return executionRepo.findByCreatedOnRange(from, to);
+	}
+	
 	public void log(long executionId, int stepNr, String message) {
 		PipelineExecutionLog log = new PipelineExecutionLog();
 		log.setLogDate(new Date());

@@ -1,5 +1,6 @@
 package eu.openanalytics.phaedra.pipelineservice.api;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import eu.openanalytics.phaedra.pipelineservice.dto.PipelineExecution;
@@ -30,7 +32,17 @@ public class PipelineExecutionController {
 	}
 	
 	@GetMapping(value = "/executions", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<PipelineExecution>> getAllPipelineExecutions() {
-		return ResponseEntity.ok(pipelineExecutionService.findAll(null));
+	public ResponseEntity<List<PipelineExecution>> getAllPipelineExecutions(
+			@RequestParam(name = "from", required = false) String from,
+			@RequestParam(name = "to", required = false) String to) {
+		
+		Date fromDate = (from == null) ? null : new Date(Long.parseLong(from));
+		Date toDate = (to == null) ? null : new Date(Long.parseLong(to));
+		
+		if (fromDate == null || toDate == null) {
+			return ResponseEntity.ok(pipelineExecutionService.findAll(null));
+		} else {
+			return ResponseEntity.ok(pipelineExecutionService.findBetween(fromDate, toDate));
+		}
 	}	
 }
