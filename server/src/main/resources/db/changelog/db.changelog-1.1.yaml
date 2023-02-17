@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: fmichielssen
+      changes:
+        - addColumn:
+            tableName: pipeline_execution
+            columns:
+              - column:
+                  name: variables
+                  type: text

@@ -109,6 +109,7 @@ public class PipelineDefinitionService {
 
 		PipelineDefinition newDefinition = pipelineDefinitionRepo.save(existingDefinition);
 		if (statusChanged) handleStatusChanged(newDefinition);
+		if (configChanged) handleConfigChanged(newDefinition);
 		return newDefinition;
 	}
 	
@@ -139,6 +140,14 @@ public class PipelineDefinitionService {
 			pipelineTriggerService.unregisterPipelineTrigger(definition.getId());
 		}
 		
+	}
+	
+	/**
+	 * If the PipelineDefinition has its config changed, re-schedule its trigger(s).
+	 */
+	private void handleConfigChanged(PipelineDefinition definition) {
+		pipelineTriggerService.unregisterPipelineTrigger(definition.getId());
+		pipelineTriggerService.registerPipelineTrigger(definition.getId());
 	}
 	
 }

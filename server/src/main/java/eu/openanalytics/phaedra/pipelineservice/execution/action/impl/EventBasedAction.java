@@ -1,4 +1,4 @@
-package eu.openanalytics.phaedra.pipelineservice.execution.action;
+package eu.openanalytics.phaedra.pipelineservice.execution.action.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,15 +6,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 
 import eu.openanalytics.phaedra.pipelineservice.execution.PipelineExecutionContext;
+import eu.openanalytics.phaedra.pipelineservice.execution.action.ActionExecutionException;
+import eu.openanalytics.phaedra.pipelineservice.execution.action.IAction;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescriptor;
 
-public abstract class AbstractAction implements IAction {
+public abstract class EventBasedAction implements IAction {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
 	protected KafkaTemplate<String, String> kafkaTemplate;
 
+	@Override
+	public String getType() {
+		String className = getClass().getSimpleName();
+		return className.substring(0, className.indexOf("Action"));
+	}
+	
+	@Override
+	public void invoke(PipelineExecutionContext context) throws ActionExecutionException {
+		String msgToPost = buildActionStartMessage(context);
+		kafkaTemplate.send(getTopic(), getActionStartKey(), msgToPost);
+	}
+	
 	/**
 	 * By providing an implicit "action complete" trigger, the user does not have
 	 * to define an explicit trigger in the next step of their pipeline.
@@ -26,6 +40,12 @@ public abstract class AbstractAction implements IAction {
 		// Default: no completion trigger, so the step completes immediately after invoking the action.
 		return null;
 	}
+	
+	protected abstract String getTopic();
+	protected abstract String getActionStartKey();
+	protected abstract String getActionCompleteKey();
+	protected abstract String getActionErrorKey();
+	protected abstract String buildActionStartMessage(PipelineExecutionContext context);
 	
 	protected void sleep(long ms) {
 		logger.debug(String.format("Sleeping %d ms.", ms));
@@ -42,4 +62,5 @@ public abstract class AbstractAction implements IAction {
 		String triggerMessage = context.resolveVar(String.format("step.%d.trigger.message", stepNr), null);
 		return triggerMessage;
 	}
+
 }

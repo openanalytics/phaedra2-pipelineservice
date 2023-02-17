@@ -78,13 +78,17 @@ public class PipelineExecutionService {
 	}
 	
 	public void log(long executionId, int stepNr, String message) {
+		log(executionId, stepNr, message, LogMessageType.Info);
+	}
+	
+	public void log(long executionId, int stepNr, String message, LogMessageType type) {
 		PipelineExecutionLog log = new PipelineExecutionLog();
 		log.setLogDate(new Date());
 		log.setPipelineExecutionId(executionId);
 		log.setStepNr(stepNr);
 		log.setMessage(message);
-		log.setMessageType(LogMessageType.Info.name());
-		logRepo.save(log);
+		log.setMessageType(type.name());
+		log(log);
 	}
 	
 	public void log(PipelineExecutionLog log) {

@@ -7,26 +7,6 @@ server:
 spring:
   application:
     name: phaedra-pipeline-service
-  liquibase:
-    enabled: false
-  security:
-    oauth2:
-      client:
-        registration:
-          keycloak:
-            provider: keycloak
-#            client-id: phaedra2-pipeline-service
-#            client-secret: ???
-            authorization-grant-type: client_credentials
-        provider:
-          keycloak:
-            authorization-uri: ${keycloak-base-url}/auth/realms/phaedra2/protocol/openid-connect/auth
-            token-uri: ${keycloak-base-url}/auth/realms/phaedra2/protocol/openid-connect/token
-            user-info-uri: ${keycloak-base-url}/auth/realms/phaedra2/protocol/openid-connect/userinfo
-            jwk-set-uri: ${keycloak-base-url}/auth/realms/phaedra2/protocol/openid-connect/certs
-      resourceserver:
-        jwt:
-          jwk-set-uri: ${keycloak-base-url}/auth/realms/phaedra2/protocol/openid-connect/certs
   jackson:
     serialization:
       indent_output: true

@@ -7,7 +7,7 @@ public interface IAction {
 
 	public String getType();
 	
-	public void invoke(PipelineExecutionContext context);
+	public void invoke(PipelineExecutionContext context) throws ActionExecutionException;
 
 	public TriggerDescriptor getActionCompleteTrigger(PipelineExecutionContext context);
 

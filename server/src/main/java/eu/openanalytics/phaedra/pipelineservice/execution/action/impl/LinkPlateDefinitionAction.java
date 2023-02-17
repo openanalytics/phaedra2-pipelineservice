@@ -11,39 +11,35 @@ import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescrip
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.impl.GenericEventTrigger;
 
 @Component
-public class CaptureMeasurementAction extends AbstractAction {
+public class LinkPlateDefinitionAction extends AbstractAction {
 
-	private static final String DC_TOPIC = "datacapture";
-	private static final String DC_KEY_MEAS_CAPTURED = "measurementCaptured";
+	private static final String DC_TOPIC = "plate";
+	private static final String DC_KEY_PLATE_LINKED = "plateDefinitionLinked";
 	
-	private static final String JSON_LOCATION_SELECTOR = "$['location']";
+	private static final String JSON_PLATE_ID_SELECTOR = "$['plateId']";
 	
 	@Override
 	public String getType() {
-		return "CaptureMeasurement";
+		return "LinkPlateDefinition";
 	}
 
 	@Override
 	public void invoke(PipelineExecutionContext context) throws ActionExecutionException {
-		//TODO Submit a real datacapture request
+		//TODO Submit a real request
 		sleep(3000);
 		
 		String triggerMessage = getTriggerMessage(context);
+		Number plateId = JsonPath.read(triggerMessage, JSON_PLATE_ID_SELECTOR);
 		
-		String location = JsonPath.read(triggerMessage, JSON_LOCATION_SELECTOR);
-		long measId = (long)(Math.random() * 100000);
-		
-		String[] locationParts = location.split("/");
-		String barcode = locationParts[locationParts.length - 1];
-		
-		String msgToPost = String.format("{ 'location': '%s', 'measurementId': %d, 'barcode': '%s' }", location, measId, barcode);
-		kafkaTemplate.send(DC_TOPIC, DC_KEY_MEAS_CAPTURED, msgToPost);
+		String msgToPost = String.format("{ 'plateId': %d }", plateId);
+		kafkaTemplate.send(DC_TOPIC, DC_KEY_PLATE_LINKED, msgToPost);
 	}
 
 	@Override
 	public TriggerDescriptor getActionCompleteTrigger(PipelineExecutionContext context) {
 		String triggerMessage = getTriggerMessage(context);
-		String location = JsonPath.read(triggerMessage, JSON_LOCATION_SELECTOR);
-		return GenericEventTrigger.buildDescriptor(DC_TOPIC, DC_KEY_MEAS_CAPTURED, JSON_LOCATION_SELECTOR, null, location);
+		Object plateId = JsonPath.read(triggerMessage, JSON_PLATE_ID_SELECTOR);
+		return GenericEventTrigger.buildDescriptor(DC_TOPIC, DC_KEY_PLATE_LINKED, JSON_PLATE_ID_SELECTOR, null, plateId);
 	}
+
 }

@@ -19,6 +19,8 @@ public class PipelineExecution {
     private Date updatedOn;
     private String updatedBy;
     
+    private String variables;
+    
 	public Long getId() {
 		return id;
 	}
@@ -66,5 +68,11 @@ public class PipelineExecution {
 	}
 	public void setUpdatedBy(String updatedBy) {
 		this.updatedBy = updatedBy;
+	}
+	public String getVariables() {
+		return variables;
+	}
+	public void setVariables(String variables) {
+		this.variables = variables;
 	}
 }
