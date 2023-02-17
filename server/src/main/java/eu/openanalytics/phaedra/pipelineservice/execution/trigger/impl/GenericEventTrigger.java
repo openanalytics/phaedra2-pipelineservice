@@ -13,6 +13,7 @@ import eu.openanalytics.phaedra.pipelineservice.execution.PipelineExecutionConte
 import eu.openanalytics.phaedra.pipelineservice.execution.event.EventDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.ITrigger;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescriptor;
+import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerMatchType;
 
 /**
  * A generic type of trigger that is based on (Kafka) events.
@@ -41,9 +42,13 @@ public class GenericEventTrigger implements ITrigger {
 	}
 
 	@Override
-	public boolean matches(EventDescriptor event, TriggerDescriptor descriptor, PipelineExecutionContext ctx) {
+	public TriggerMatchType matches(EventDescriptor event, TriggerDescriptor descriptor, PipelineExecutionContext ctx) {
 		String filterTopic = (String) descriptor.getConfig().get("topic");
+		if (!event.topic.equalsIgnoreCase(filterTopic)) return TriggerMatchType.NoMatch;
+		
 		String filterKey = (String) descriptor.getConfig().get("key");
+		String filterKeyError = (String) descriptor.getConfig().get("keyError");
+		
 		String filterSelector = (String) descriptor.getConfig().get("selector");
 		String filterPattern = (String) descriptor.getConfig().get("pattern");
 		Object filterValue = descriptor.getConfig().get("value");
@@ -53,24 +58,31 @@ public class GenericEventTrigger implements ITrigger {
 			try {
 				matchValue = JsonPath.read((String) matchValue, filterSelector);
 			} catch (PathNotFoundException e) {
-				return false;
+				return TriggerMatchType.NoMatch;
 			} catch (Exception e) {
 				logger.debug(String.format("Event matching error using JSONPath selector '%s'", filterSelector), e);
-				return false;
+				return TriggerMatchType.NoMatch;
 			}
 		}
 		
 		boolean matchesPattern = filterPattern == null || Pattern.compile(filterPattern).matcher(String.valueOf(matchValue)).matches();
 		boolean matchesValue = filterValue == null || filterValue.equals(matchValue);
 		
-		return (event.topic.equalsIgnoreCase(filterTopic) && event.key.equalsIgnoreCase(filterKey) && matchesPattern && matchesValue);
+		if (event.key.equalsIgnoreCase(filterKey) && matchesPattern && matchesValue) {
+			return TriggerMatchType.Match;
+		} else if (filterKeyError != null && event.key.equalsIgnoreCase(filterKeyError) && matchesPattern && matchesValue) {
+			return TriggerMatchType.Error;
+		} else {
+			return TriggerMatchType.NoMatch;
+		}
 	}
 
-	public static TriggerDescriptor buildDescriptor(String topic, String key, String selector, String pattern, Object value) {
+	public static TriggerDescriptor buildDescriptor(String topic, String key, String errKey, String selector, String pattern, Object value) {
 		TriggerDescriptor trigger = new TriggerDescriptor();
 		trigger.setType(TYPE);
 		trigger.getConfig().put("topic", topic);
 		trigger.getConfig().put("key", key);
+		if (errKey != null) trigger.getConfig().put("keyError", errKey);
 		if (selector != null) trigger.getConfig().put("selector", selector);
 		if (pattern != null) trigger.getConfig().put("pattern", pattern);
 		if (value != null) trigger.getConfig().put("value", value);

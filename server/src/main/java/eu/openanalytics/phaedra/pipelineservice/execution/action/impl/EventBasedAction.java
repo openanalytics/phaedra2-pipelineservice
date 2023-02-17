@@ -8,6 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import eu.openanalytics.phaedra.pipelineservice.execution.PipelineExecutionContext;
 import eu.openanalytics.phaedra.pipelineservice.execution.action.ActionExecutionException;
 import eu.openanalytics.phaedra.pipelineservice.execution.action.IAction;
+import eu.openanalytics.phaedra.pipelineservice.execution.event.EventDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescriptor;
 
 public abstract class EventBasedAction implements IAction {
@@ -25,8 +26,8 @@ public abstract class EventBasedAction implements IAction {
 	
 	@Override
 	public void invoke(PipelineExecutionContext context) throws ActionExecutionException {
-		String msgToPost = buildActionStartMessage(context);
-		kafkaTemplate.send(getTopic(), getActionStartKey(), msgToPost);
+		EventDescriptor msgToPost = buildActionStartMessage(context);
+		kafkaTemplate.send(msgToPost.topic, msgToPost.key, msgToPost.message);
 	}
 	
 	/**
@@ -41,18 +42,7 @@ public abstract class EventBasedAction implements IAction {
 		return null;
 	}
 	
-	protected abstract String getTopic();
-	protected abstract String getActionStartKey();
-	protected abstract String getActionCompleteKey();
-	protected abstract String getActionErrorKey();
-	protected abstract String buildActionStartMessage(PipelineExecutionContext context);
-	
-	protected void sleep(long ms) {
-		logger.debug(String.format("Sleeping %d ms.", ms));
-		try {
-			Thread.sleep(ms);
-		} catch (InterruptedException e) {}
-	}
+	protected abstract EventDescriptor buildActionStartMessage(PipelineExecutionContext context);
 	
 	/**
 	 * Get the message of the event that triggered the current step.

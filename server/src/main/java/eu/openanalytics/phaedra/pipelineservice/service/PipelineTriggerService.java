@@ -18,6 +18,7 @@ import eu.openanalytics.phaedra.pipelineservice.execution.action.IAction;
 import eu.openanalytics.phaedra.pipelineservice.execution.event.EventDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.ITrigger;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescriptor;
+import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerMatchType;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerRegistry;
 import eu.openanalytics.phaedra.pipelineservice.model.config.PipelineStep;
 
@@ -83,13 +84,20 @@ public class PipelineTriggerService {
 			PipelineExecutionContext ctx = buildExecutionContext(rt, false);
 			ITrigger trigger = triggerRegistry.resolve(rt.descriptor);
 			
-			if (trigger.matches(event, rt.descriptor, ctx)) {
+			TriggerMatchType matchType = trigger.matches(event, rt.descriptor, ctx);
+			
+			if (matchType == TriggerMatchType.Match) {
 				logger.debug(String.format("Firing trigger [pipeline %d] [step %d]", rt.pipelineId, rt.stepNr));
 				
 				ctx = buildExecutionContext(rt, true);
 				ctx.setVar(String.format("step.%d.trigger.message", rt.stepNr) , event.message);
 				
 				handleTriggerFired(rt, ctx);
+				return true;
+			} else if (matchType == TriggerMatchType.Error) {
+				ctx = buildExecutionContext(rt, true);
+				ctx.setVar(String.format("step.%d.trigger.message", rt.stepNr) , event.message);
+				handleTriggerError(rt, ctx, String.format("%s: %s", event.key, event.message));
 				return true;
 			}
 		}
@@ -177,11 +185,17 @@ public class PipelineTriggerService {
 		try {
 			actionToInvoke.invoke(context);
 		} catch (Throwable t) {
-			context.updateExecutionVariables();
-			context.execution.setStatus(PipelineExecutionStatus.ERROR);
-			executionService.log(context.execution.getId(), trigger.stepNr, String.format("Error during action %s: %s", actionToInvoke.getType(), t.getMessage()));
-			executionService.update(context.execution);
+			handleTriggerError(trigger, context, t.getMessage());
 		}
+	}
+
+	private void handleTriggerError(RegisteredTrigger trigger, PipelineExecutionContext context, String errorMessage) {
+		logger.debug(String.format("Error while running action [pipeline %d] [step %d]: %s", context.definition.getId(), context.execution.getCurrentStep(), errorMessage));
+		
+		context.updateExecutionVariables();
+		context.execution.setStatus(PipelineExecutionStatus.ERROR);
+		executionService.log(context.execution.getId(), trigger.stepNr, String.format("Error during pipeline step %d: %s", context.execution.getCurrentStep(), errorMessage));
+		executionService.update(context.execution);
 	}
 
 	private static class RegisteredTrigger {

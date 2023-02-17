@@ -7,6 +7,6 @@ public interface ITrigger {
 
 	public String getType();
 	
-	public boolean matches(EventDescriptor event, TriggerDescriptor descriptor, PipelineExecutionContext ctx);
+	public TriggerMatchType matches(EventDescriptor event, TriggerDescriptor descriptor, PipelineExecutionContext ctx);
 
 }
