@@ -81,7 +81,7 @@ public class PipelineTriggerService {
 	
 	public void unregisterAllTriggers(long executionId) {
 		registeredTriggers.values().stream()
-			.filter(t -> t.executionId == executionId)
+			.filter(t -> t.executionId != null && t.executionId == executionId)
 			.forEach(t -> registeredTriggers.remove(t.id));
 		logger.debug(String.format("Unregistered all triggers [execution %d]", executionId));
 	}
