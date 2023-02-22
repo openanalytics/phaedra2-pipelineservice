@@ -10,6 +10,8 @@ spring:
   jackson:
     serialization:
       indent_output: true
+  liquibase:
+    enabled: false
   kafka:
     producer:
       bootstrap-servers: localhost:9092
