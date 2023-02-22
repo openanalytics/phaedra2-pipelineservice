@@ -28,6 +28,9 @@ public class PipelineExecutionService {
 	@Autowired
 	private PipelineExecutionLogRepo logRepo;
 	
+	@Autowired
+	private PipelineTriggerService pipelineTriggerService;
+	
 //	@Autowired
 //	private IAuthorizationService authService;
 	
@@ -117,6 +120,15 @@ public class PipelineExecutionService {
 		
 		validate(existingExecution, false);
 		return executionRepo.save(existingExecution);
+	}
+	
+	public void cancelExecution(long executionId) {
+		PipelineExecution exec = findById(executionId).orElse(null);
+		if (exec == null) return;
+		exec.setStatus(PipelineExecutionStatus.CANCELLED);
+		log(exec.getId(), exec.getCurrentStep(), "Cancelled by request");
+		update(exec);
+		pipelineTriggerService.unregisterAllTriggers(executionId);
 	}
 	
 	private void validate(PipelineExecution exec, boolean isNew) {

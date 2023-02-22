@@ -79,6 +79,13 @@ public class PipelineTriggerService {
 		logger.debug(String.format("Unregistered trigger [pipeline %d] [step %d]", definitionId, stepNr));
 	}
 	
+	public void unregisterAllTriggers(long executionId) {
+		registeredTriggers.values().stream()
+			.filter(t -> t.executionId == executionId)
+			.forEach(t -> registeredTriggers.remove(t.id));
+		logger.debug(String.format("Unregistered all triggers [execution %d]", executionId));
+	}
+	
 	public boolean matchAndFire(EventDescriptor event) {
 		for (RegisteredTrigger rt: registeredTriggers.values()) {
 			PipelineExecutionContext ctx = buildExecutionContext(rt, false);
