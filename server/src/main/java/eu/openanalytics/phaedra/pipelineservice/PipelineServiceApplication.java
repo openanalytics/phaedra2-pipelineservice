@@ -20,6 +20,8 @@ import eu.openanalytics.phaedra.util.auth.AuthenticationConfigHelper;
 import eu.openanalytics.phaedra.util.auth.AuthorizationServiceFactory;
 import eu.openanalytics.phaedra.util.auth.IAuthorizationService;
 import eu.openanalytics.phaedra.util.jdbc.JDBCUtils;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.servers.Server;
 
 @SpringBootApplication
 @EnableScheduling
@@ -65,6 +67,12 @@ public class PipelineServiceApplication {
 		}
 
 		return new HikariDataSource(config);
+	}
+
+	@Bean
+	public OpenAPI customOpenAPI() {
+		Server server = new Server().url((environment.getProperty("API_URL"))).description("Default Server URL");
+		return new OpenAPI().addServersItem(server);
 	}
 	
 	@Bean
