@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,22 +20,23 @@ import eu.openanalytics.phaedra.pipelineservice.dto.PipelineExecutionLog;
 import eu.openanalytics.phaedra.pipelineservice.service.PipelineExecutionService;
 
 @RestController
+@RequestMapping("/pipeline-executions")
 public class PipelineExecutionController {
 
 	@Autowired
 	private PipelineExecutionService pipelineExecutionService;
 	
-	@GetMapping(value = "/execution/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping("/{id}")
 	public ResponseEntity<PipelineExecution> getPipelineExecution(@PathVariable long id) {
 		return ResponseEntity.of(pipelineExecutionService.findById(id));
 	}
 	
-	@GetMapping(value = "/execution/{id}/log", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping("/{id}/log")
 	public ResponseEntity<List<PipelineExecutionLog>> getPipelineExecutionLog(@PathVariable long id) {
 		return ResponseEntity.ok(pipelineExecutionService.getLog(id));
 	}
 	
-	@GetMapping(value = "/executions", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping
 	public ResponseEntity<List<PipelineExecution>> getAllPipelineExecutions(
 			@RequestParam(name = "from", required = false) String from,
 			@RequestParam(name = "to", required = false) String to) {
@@ -50,7 +51,7 @@ public class PipelineExecutionController {
 		}
 	}
 	
-    @PutMapping(value = "/execution/{id}/cancel", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/{id}/cancel")
     public ResponseEntity<PipelineDefinition> cancelPipelineExecution(@PathVariable long id) {
     	try {
 	    	pipelineExecutionService.cancelExecution(id);
