@@ -14,9 +14,11 @@
 	<name>phaedra2-pipelineservice-server</name>
 
 	<properties>
-		<docker.repoPrefix/>
-		<docker.imageName>${project.parent.artifactId}</docker.imageName>
-	</properties>
+        <java.version>16</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <docker.imageName>openanalytics/${project.parent.artifactId}</docker.imageName>
+    </properties>
 	
 	<dependencies>
 		<!-- Phaedra dependencies -->
@@ -52,16 +54,15 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			<!-- Allows building a Docker image -->
-			<plugin>
-				<groupId>io.fabric8</groupId>
+			
+            <plugin>
+                <groupId>io.fabric8</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.37.0</version>
 				<configuration>
-					<verbose>true</verbose>
 					<images>
 						<image>
-							<name>${docker.repoPrefix}${docker.imageName}</name>
+							<name>${docker.imageName}</name>
 							<build>
 								<dockerFile>${project.basedir}/Dockerfile.app</dockerFile>
 								<tags>
@@ -72,27 +73,27 @@
 								</args>
 							</build>
 						</image>
-						<image>
-							<name>${docker.repoPrefix}${docker.imageName}.liquibase</name>
-							<build>
-								<dockerFile>${project.basedir}/Dockerfile.db</dockerFile>
-								<tags>
-									<tag>${project.version}</tag>
-								</tags>
-							</build>
-						</image>
+                        <image>
+                        	<name>${docker.imageName}.liquibase</name>
+                            <build>
+                                <dockerFile>${project.basedir}/Dockerfile.db</dockerFile>
+                                <tags>
+                                    <tag>${project.version}</tag>
+                                </tags>
+                            </build>
+                        </image>
 					</images>
 				</configuration>
 				<executions>
 					<execution>
-						<id>default</id>
 						<phase>install</phase>
 						<goals>
 							<goal>build</goal>
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+            </plugin>
+
 		</plugins>
 	</build>
 
