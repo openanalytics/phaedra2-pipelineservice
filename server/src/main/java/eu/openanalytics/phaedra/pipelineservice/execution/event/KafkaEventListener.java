@@ -18,7 +18,7 @@ public class KafkaEventListener {
 	@Autowired
 	private PipelineTriggerService triggerService;
 	
-	@KafkaListener(topicPattern = ".*")
+	@KafkaListener(topicPattern = ".*", groupId = "pipeline-service")
 	public void processEvent(String message, 
 			@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String key,
 			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
