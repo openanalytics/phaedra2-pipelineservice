@@ -28,8 +28,7 @@ public class PipelineExecutionService {
 	@Autowired
 	private PipelineExecutionLogRepo logRepo;
 	
-	@Autowired
-	private PipelineTriggerService pipelineTriggerService;
+	private List<PipelineExecutionChangeListener> changeListeners = new ArrayList<>();
 	
 //	@Autowired
 //	private IAuthorizationService authService;
@@ -128,13 +127,23 @@ public class PipelineExecutionService {
 		exec.setStatus(PipelineExecutionStatus.CANCELLED);
 		log(exec.getId(), exec.getCurrentStep(), "Cancelled by request");
 		update(exec);
-		pipelineTriggerService.unregisterAllTriggers(executionId);
+		for (PipelineExecutionChangeListener l: changeListeners) {
+			l.onExecutionCancelled(exec);
+		}
 	}
 	
+	public void addPipelineExecutionChangeListener(PipelineExecutionChangeListener listener) {
+		changeListeners.add(listener);
+	}
+
 	private void validate(PipelineExecution exec, boolean isNew) {
 		if (isNew) Assert.isTrue(exec.getId() == null, "New pipeline execution must have ID equal to 0");
 		Assert.notNull(exec.getPipelineId(), "Pipeline execution must reference a valid pipeline definition");
 		Assert.hasText(exec.getCreatedBy(), "Pipeline execution creator cannot be empty");
 		Assert.notNull(exec.getCreatedOn(), "Pipeline execution creation date cannot be null");
+	}
+	
+	public static class PipelineExecutionChangeListener {
+		public void onExecutionCancelled(PipelineExecution exec) {}
 	}
 }

@@ -4,12 +4,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import eu.openanalytics.phaedra.pipelineservice.dto.PipelineDefinition;
+import eu.openanalytics.phaedra.pipelineservice.dto.PipelineDefinitionStatus;
 import eu.openanalytics.phaedra.pipelineservice.dto.PipelineExecution;
 import eu.openanalytics.phaedra.pipelineservice.dto.PipelineExecutionStatus;
 import eu.openanalytics.phaedra.pipelineservice.execution.PipelineExecutionContext;
@@ -21,6 +24,8 @@ import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescrip
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerMatchType;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerRegistry;
 import eu.openanalytics.phaedra.pipelineservice.model.config.PipelineStep;
+import eu.openanalytics.phaedra.pipelineservice.service.PipelineDefinitionService.PipelineDefinitionChangeListener;
+import eu.openanalytics.phaedra.pipelineservice.service.PipelineExecutionService.PipelineExecutionChangeListener;
 
 //TODO Handle errors
 @Service
@@ -43,6 +48,34 @@ public class PipelineTriggerService {
 	
 	private static final int PIPELINE_FIRST_STEP = 1;
 	private static final int PIPELINE_COMPLETE_STEP = -1;
+	
+	@PostConstruct
+	public void init() {
+		definitionService.addPipelineDefinitionChangeListener(new PipelineDefinitionChangeListener() {
+			@Override
+			public void onStatusChanged(PipelineDefinition definition) {
+				// If the PipelineDefinition has status ENABLED, schedule its trigger(s).
+				// If it has status DISABLED, unschedule all of its triggers.
+				if (definition.getStatus() == PipelineDefinitionStatus.ENABLED) {
+					registerPipelineTrigger(definition.getId());
+				} else {
+					unregisterPipelineTrigger(definition.getId());
+				}
+			}
+			@Override
+			public void onConfigChanged(PipelineDefinition definition) {
+				// If the PipelineDefinition has its config changed, re-schedule its trigger(s).
+				unregisterPipelineTrigger(definition.getId());
+				registerPipelineTrigger(definition.getId());
+			}
+		});
+		executionService.addPipelineExecutionChangeListener(new PipelineExecutionChangeListener() {
+			@Override
+			public void onExecutionCancelled(PipelineExecution exec) {
+				unregisterAllTriggers(exec.getId());
+			}
+		});
+	}
 	
 	public void registerPipelineTrigger(Long definitionId) {
 		registerTrigger(definitionId, null, PIPELINE_FIRST_STEP);
