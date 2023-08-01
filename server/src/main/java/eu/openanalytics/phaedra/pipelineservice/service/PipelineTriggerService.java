@@ -168,6 +168,14 @@ public class PipelineTriggerService {
 			return;
 		}
 		
+		// Invoke the "onActionComplete" method on the action that was completed.
+		int completedStepNr = context.execution.getCurrentStep();
+		if (completedStepNr > 0 && completedStepNr <= context.config.getSteps().size()) {
+			PipelineStep completedStep = context.config.getSteps().get(completedStepNr - 1);
+			IAction completedStepAction = actionRegistry.resolve(completedStep.getAction());
+			if (completedStepAction != null) completedStepAction.onActionComplete(context);
+		}
+		
 		// Figure out which step to invoke.
 		PipelineStep stepToInvoke = (trigger.stepNr <= context.config.getSteps().size()) 
 				? context.config.getSteps().get(trigger.stepNr - 1) : null;
