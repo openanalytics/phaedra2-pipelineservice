@@ -2,8 +2,6 @@ package eu.openanalytics.phaedra.pipelineservice.execution.action;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
 
 import eu.openanalytics.phaedra.pipelineservice.execution.PipelineExecutionContext;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescriptor;
@@ -12,9 +10,6 @@ public abstract class AbstractAction implements IAction {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	@Autowired
-	protected KafkaTemplate<String, String> kafkaTemplate;
-
 	/**
 	 * By providing an implicit "action complete" trigger, the user does not have
 	 * to define an explicit trigger in the next step of their pipeline.
@@ -27,19 +22,17 @@ public abstract class AbstractAction implements IAction {
 		return null;
 	}
 	
-	protected void sleep(long ms) {
-		logger.debug(String.format("Sleeping %d ms.", ms));
-		try {
-			Thread.sleep(ms);
-		} catch (InterruptedException e) {}
-	}
-	
 	/**
-	 * Get the message of the event that triggered the current step.
+	 * Resolve a variable against the context, and return its value. 
+	 * If no value was found, throw a runtime exception instead with the given message.
 	 */
-	protected String getTriggerMessage(PipelineExecutionContext context) {
-		int stepNr = context.execution.getCurrentStep();
-		String triggerMessage = context.resolveVar(String.format("step.%d.trigger.message", stepNr), null);
-		return triggerMessage;
+	protected <T> T getRequiredVar(String key, PipelineExecutionContext context, String errMsg) {
+		T value = context.resolveVar(key, null);
+		if (value == null) {
+			if (errMsg == null) throw new RuntimeException(String.format("No value found for variable '%s'", key));
+			else throw new RuntimeException(errMsg);
+		}
+		else return value;
 	}
+
 }

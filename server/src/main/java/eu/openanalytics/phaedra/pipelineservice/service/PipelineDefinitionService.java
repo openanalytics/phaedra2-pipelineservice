@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import eu.openanalytics.phaedra.pipelineservice.dto.PipelineDefinition;
-import eu.openanalytics.phaedra.pipelineservice.dto.PipelineDefinitionStatus;
 import eu.openanalytics.phaedra.pipelineservice.repo.PipelineDefinitionRepo;
 import eu.openanalytics.phaedra.util.auth.IAuthorizationService;
 import eu.openanalytics.phaedra.util.versioning.VersionUtils;
@@ -31,10 +30,9 @@ public class PipelineDefinitionService {
 	private PipelineDefinitionRepo pipelineDefinitionRepo;
 	
 	@Autowired
-	private PipelineTriggerService pipelineTriggerService;
-	
-	@Autowired
 	private IAuthorizationService authService;
+	
+	private List<PipelineDefinitionChangeListener> changeListeners = new ArrayList<>();
 	
 	private ModelMapper modelMapper = new ModelMapper();
 	
@@ -120,6 +118,10 @@ public class PipelineDefinitionService {
 		pipelineDefinitionRepo.deleteById(definitionId);
 	}
 	
+	public void addPipelineDefinitionChangeListener(PipelineDefinitionChangeListener listener) {
+		changeListeners.add(listener);
+	}
+
 	private void validate(PipelineDefinition def, boolean isNew) {
 		if (isNew) Assert.isTrue(def.getId() == null, "New pipeline definition must have ID equal to 0");
 		Assert.hasText(def.getName(), "Pipeline definition name cannot be empty");
@@ -129,25 +131,21 @@ public class PipelineDefinitionService {
 		//TODO Parse and validate config
 	}
 	
-	/**
-	 * If the PipelineDefinition has status ENABLED, schedule its trigger(s).
-	 * If it has status DISABLED, unschedule all of its triggers.
-	 */
 	private void handleStatusChanged(PipelineDefinition definition) {
-		if (definition.getStatus() == PipelineDefinitionStatus.ENABLED) {
-			pipelineTriggerService.registerPipelineTrigger(definition.getId());
-		} else {
-			pipelineTriggerService.unregisterPipelineTrigger(definition.getId());
+		for (PipelineDefinitionChangeListener l: changeListeners) {
+			l.onStatusChanged(definition);
 		}
-		
 	}
 	
-	/**
-	 * If the PipelineDefinition has its config changed, re-schedule its trigger(s).
-	 */
 	private void handleConfigChanged(PipelineDefinition definition) {
-		pipelineTriggerService.unregisterPipelineTrigger(definition.getId());
-		pipelineTriggerService.registerPipelineTrigger(definition.getId());
+		for (PipelineDefinitionChangeListener l: changeListeners) {
+			l.onConfigChanged(definition);
+		}
+	}
+	
+	public static class PipelineDefinitionChangeListener {
+		public void onStatusChanged(PipelineDefinition def) {}
+		public void onConfigChanged(PipelineDefinition def) {}
 	}
 	
 }

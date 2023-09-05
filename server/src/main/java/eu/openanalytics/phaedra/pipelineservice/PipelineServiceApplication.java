@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -16,6 +17,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import eu.openanalytics.phaedra.plateservice.client.config.PlateServiceClientAutoConfiguration;
+import eu.openanalytics.phaedra.util.PhaedraRestTemplate;
 import eu.openanalytics.phaedra.util.auth.AuthenticationConfigHelper;
 import eu.openanalytics.phaedra.util.auth.AuthorizationServiceFactory;
 import eu.openanalytics.phaedra.util.auth.IAuthorizationService;
@@ -28,6 +31,9 @@ import io.swagger.v3.oas.models.servers.Server;
 @EnableCaching
 @EnableKafka
 @EnableWebSecurity
+@Import({
+    PlateServiceClientAutoConfiguration.class
+})
 public class PipelineServiceApplication {
 
 	private final Environment environment;
@@ -85,4 +91,9 @@ public class PipelineServiceApplication {
 		return AuthenticationConfigHelper.configure(http);
 	}
 
+    @Bean
+    public PhaedraRestTemplate restTemplate() {
+        PhaedraRestTemplate restTemplate = new PhaedraRestTemplate();
+        return restTemplate;
+    }
 }

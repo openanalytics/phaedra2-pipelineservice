@@ -31,7 +31,12 @@
 			<artifactId>phaedra2-pipelineservice-dto</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-
+		<dependency>
+			<groupId>eu.openanalytics.phaedra</groupId>
+			<artifactId>phaedra2-plateservice-client</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
 		<!-- Apache kafka dependencies-->
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
