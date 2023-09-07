@@ -1,5 +1,6 @@
 package eu.openanalytics.phaedra.pipelineservice.execution.action.impl;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,17 +10,20 @@ import eu.openanalytics.phaedra.pipelineservice.execution.PipelineExecutionConte
 import eu.openanalytics.phaedra.pipelineservice.execution.event.EventDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.impl.GenericEventTrigger;
+import eu.openanalytics.phaedra.pipelineservice.execution.trigger.impl.GenericEventTrigger.EventMatchCondition;
 import eu.openanalytics.phaedra.plateservice.client.PlateServiceClient;
 import eu.openanalytics.phaedra.plateservice.dto.PlateDTO;
 
 @Component
 public class LinkPlateMeasurementAction extends EventBasedAction {
 
-	private static final String TOPIC = "plate";
-	private static final String EVENT_REQ_PLATE_MEAS_LINK = "requestPlateMeasurementLink";
-	private static final String EVENT_MEAS_LINKED = "measurementLinked";
+	private static final String TOPIC = "plates";
 	
-	private static final String JSON_MEAS_ID_SELECTOR = "$.measurementId";
+	private static final String EVENT_REQ_PLATE_MEAS_LINK = "requestPlateMeasurementLink";
+	private static final String EVENT_NOTIFY_PLATE_MEAS_LINKED = "notifyPlateMeasLinked";
+	
+	private static final String JSON_MEAS_ID_SELECTOR = "$.measurement.measurementId";
+	private static final String JSON_OUTCOME_SELECTOR = "$.outcome";
 	
 	@Autowired
 	private PlateServiceClient plateServiceClient;
@@ -52,7 +56,13 @@ public class LinkPlateMeasurementAction extends EventBasedAction {
 	@Override
 	public TriggerDescriptor getActionCompleteTrigger(PipelineExecutionContext context) {
 		Long measId = context.resolveVar("measurementId", null);
-		return GenericEventTrigger.buildDescriptor(TOPIC, EVENT_MEAS_LINKED, null, JSON_MEAS_ID_SELECTOR, null, measId);
+		EventMatchCondition matcher = EventMatchCondition.builder().key(EVENT_NOTIFY_PLATE_MEAS_LINKED)
+				.payloadSelector(JSON_MEAS_ID_SELECTOR).value(measId).build();
+		
+		EventMatchCondition isError = EventMatchCondition.builder().key(EVENT_NOTIFY_PLATE_MEAS_LINKED)
+				.payloadSelector(JSON_OUTCOME_SELECTOR).value("ERROR").build();
+		
+		return GenericEventTrigger.buildTrigger(TOPIC, Arrays.asList(isError), Arrays.asList(matcher));
 	}
 
 }
