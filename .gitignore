@@ -34,3 +34,9 @@ hs_err_pid*
 /server/target/
 /dto/target/
 application.yml
+
+# IntelliJ IDE files
+/server/phaedra2-pipelineservice-server.iml
+/dto/phaedra2-pipelineservice-dto.iml
+phaedra2-pipelineservice.iml
+
