@@ -40,8 +40,17 @@ public class CaptureMeasurementAction extends EventBasedAction {
 	@Override
 	public TriggerDescriptor getActionCompleteTrigger(PipelineExecutionContext context) {
 		String sourcePath = context.resolveVar("sourcePath", null);
-		
-		EventMatchCondition matchesSourcePath = new EventMatchCondition(JSON_SOURCE_PATH_SELECTOR, null, sourcePath); 
+		return buildActionCompleteTrigger(sourcePath, null);
+	}
+	
+	@Override
+	public void onActionComplete(PipelineExecutionContext context) {
+		String triggerMessage = getNextTriggerMessage(context);
+		captureMeasVariables(triggerMessage, context);
+	}
+	
+	public static TriggerDescriptor buildActionCompleteTrigger(String sourcePath, String sourcePathPattern) {
+		EventMatchCondition matchesSourcePath = new EventMatchCondition(JSON_SOURCE_PATH_SELECTOR, sourcePathPattern, sourcePath); 
 		EventMatchCondition hasMeasId = new EventMatchCondition(JSON_MEAS_ID_SELECTOR, ".+", null);
 		EventMatchCondition isRunning = new EventMatchCondition(JSON_STATUS_SELECTOR, null, "Running");
 		EventMatchCondition isError = new EventMatchCondition(JSON_STATUS_SELECTOR, null, "Error");
@@ -51,12 +60,10 @@ public class CaptureMeasurementAction extends EventBasedAction {
 				Arrays.asList(matchesSourcePath, isError));
 	}
 	
-	@Override
-	public void onActionComplete(PipelineExecutionContext context) {
-		String triggerMessage = getNextTriggerMessage(context);
+	public static void captureMeasVariables(String triggerMessage, PipelineExecutionContext context) {
 		Number measId = JsonPath.read(triggerMessage, JSON_MEAS_ID_SELECTOR);
 		String barcode = JsonPath.read(triggerMessage, JSON_BARCODE_SELECTOR);
 		context.setVar("measurementId", measId);
-		context.setVar("barcode", barcode);
+		context.setVar("barcode", barcode);	
 	}
 }

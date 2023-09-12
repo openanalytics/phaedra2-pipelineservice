@@ -19,22 +19,13 @@ import lombok.Data;
 
 /**
  * A generic type of trigger that is based on (Kafka) events.
- * This means that the trigger will fire whenever an event is received
- * that matches:
- * 
- * <ul>
- * 	<li>A specific topic</li>
- * 	<li>A specific key</li>
- * 	<li>A specific message body</li>
- * </ul>
- * 
  * The topic and key are matched using String equality.
- * The body is matched using an optional JSONPath selector and either String equality or Regex matching.
+ * The body is matched using a list of conditions.
  */
 @Component
 public class GenericEventTrigger implements ITrigger {
 
-	private static final String TYPE = "GenericEventTrigger";
+	private static final String TYPE = "Event";
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
@@ -53,13 +44,26 @@ public class GenericEventTrigger implements ITrigger {
 		if (!event.key.equalsIgnoreCase(filterKey)) return TriggerMatchType.NoMatch;
 		
 		List<EventMatchCondition> errorConditions = (List<EventMatchCondition>) descriptor.getConfig().get("errorConditions");
-		boolean errorConditionsMet = errorConditions != null && errorConditions.stream().allMatch(c -> matches(c, event));
-		if (errorConditionsMet) return TriggerMatchType.Error;
+		if (errorConditions != null) {
+			boolean errorConditionsMet = errorConditions.stream().allMatch(c -> matches(c, event));
+			if (errorConditionsMet) return TriggerMatchType.Error;
+		}
 		
 		List<EventMatchCondition> matchConditions = (List<EventMatchCondition>) descriptor.getConfig().get("matchConditions");
-		boolean matchConditionsMet = matchConditions == null || matchConditions.stream().allMatch(c -> matches(c, event));
-		if (matchConditionsMet) return TriggerMatchType.Match;
-		else return TriggerMatchType.NoMatch;
+		if (matchConditions != null) {
+			boolean matchConditionsMet = matchConditions.stream().allMatch(c -> matches(c, event));
+			if (matchConditionsMet) return TriggerMatchType.Match;
+		}
+		
+		String selector = (String) descriptor.getConfig().get("selector");
+		String pattern = (String) descriptor.getConfig().get("pattern");
+		String value = (String) descriptor.getConfig().get("value");
+		if (pattern != null || value != null) {
+			EventMatchCondition simpleCondition = new EventMatchCondition(selector, pattern, value);
+			if (matches(simpleCondition, event)) return TriggerMatchType.Match;
+		}
+		
+		return TriggerMatchType.NoMatch;
 	}
 
 	private boolean matches(EventMatchCondition condition, EventDescriptor event) {
