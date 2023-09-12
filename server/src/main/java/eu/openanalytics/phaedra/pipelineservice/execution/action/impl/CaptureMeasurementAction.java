@@ -40,13 +40,15 @@ public class CaptureMeasurementAction extends EventBasedAction {
 	@Override
 	public TriggerDescriptor getActionCompleteTrigger(PipelineExecutionContext context) {
 		String sourcePath = context.resolveVar("sourcePath", null);
-		EventMatchCondition matchSourcePath = EventMatchCondition.builder().key(DC_KEY_NOTIFY_CAPTURE_JOB_UPDATED)
-				.payloadSelector(JSON_SOURCE_PATH_SELECTOR).value(sourcePath).build(); 
-				
-		EventMatchCondition isError = EventMatchCondition.builder().key(DC_KEY_NOTIFY_CAPTURE_JOB_UPDATED)
-				.payloadSelector(JSON_STATUS_SELECTOR).value("Error").build();
 		
-		return GenericEventTrigger.buildTrigger(DC_TOPIC, Arrays.asList(isError), Arrays.asList(matchSourcePath));
+		EventMatchCondition matchesSourcePath = new EventMatchCondition(JSON_SOURCE_PATH_SELECTOR, null, sourcePath); 
+		EventMatchCondition hasMeasId = new EventMatchCondition(JSON_MEAS_ID_SELECTOR, ".+", null);
+		EventMatchCondition isRunning = new EventMatchCondition(JSON_STATUS_SELECTOR, null, "Running");
+		EventMatchCondition isError = new EventMatchCondition(JSON_STATUS_SELECTOR, null, "Error");
+		
+		return GenericEventTrigger.buildTrigger(DC_TOPIC, DC_KEY_NOTIFY_CAPTURE_JOB_UPDATED,
+				Arrays.asList(matchesSourcePath, hasMeasId, isRunning),
+				Arrays.asList(matchesSourcePath, isError));
 	}
 	
 	@Override

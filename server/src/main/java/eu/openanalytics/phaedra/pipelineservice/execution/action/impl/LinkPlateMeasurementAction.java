@@ -56,13 +56,14 @@ public class LinkPlateMeasurementAction extends EventBasedAction {
 	@Override
 	public TriggerDescriptor getActionCompleteTrigger(PipelineExecutionContext context) {
 		Long measId = context.resolveVar("measurementId", null);
-		EventMatchCondition matcher = EventMatchCondition.builder().key(EVENT_NOTIFY_PLATE_MEAS_LINKED)
-				.payloadSelector(JSON_MEAS_ID_SELECTOR).value(measId).build();
 		
-		EventMatchCondition isError = EventMatchCondition.builder().key(EVENT_NOTIFY_PLATE_MEAS_LINKED)
-				.payloadSelector(JSON_OUTCOME_SELECTOR).value("ERROR").build();
+		EventMatchCondition matchesMeasId = new EventMatchCondition(JSON_MEAS_ID_SELECTOR, null, measId); 
+		EventMatchCondition isOK = new EventMatchCondition(JSON_OUTCOME_SELECTOR, null, "OK");
+		EventMatchCondition isError = new EventMatchCondition(JSON_OUTCOME_SELECTOR, null, "ERROR");
 		
-		return GenericEventTrigger.buildTrigger(TOPIC, Arrays.asList(isError), Arrays.asList(matcher));
+		return GenericEventTrigger.buildTrigger(TOPIC, EVENT_NOTIFY_PLATE_MEAS_LINKED,
+				Arrays.asList(matchesMeasId, isOK),
+				Arrays.asList(matchesMeasId, isError));
 	}
 
 }

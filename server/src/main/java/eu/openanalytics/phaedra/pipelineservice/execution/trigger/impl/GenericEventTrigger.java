@@ -14,7 +14,7 @@ import eu.openanalytics.phaedra.pipelineservice.execution.event.EventDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.ITrigger;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerMatchType;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
@@ -49,9 +49,12 @@ public class GenericEventTrigger implements ITrigger {
 		String filterTopic = (String) descriptor.getConfig().get("topic");
 		if (!event.topic.equalsIgnoreCase(filterTopic)) return TriggerMatchType.NoMatch;
 		
+		String filterKey = (String) descriptor.getConfig().get("key");
+		if (!event.key.equalsIgnoreCase(filterKey)) return TriggerMatchType.NoMatch;
+		
 		List<EventMatchCondition> errorConditions = (List<EventMatchCondition>) descriptor.getConfig().get("errorConditions");
-		boolean anyErrorConditionMet = errorConditions != null && errorConditions.stream().anyMatch(c -> matches(c, event));
-		if (anyErrorConditionMet) return TriggerMatchType.Error;
+		boolean errorConditionsMet = errorConditions != null && errorConditions.stream().allMatch(c -> matches(c, event));
+		if (errorConditionsMet) return TriggerMatchType.Error;
 		
 		List<EventMatchCondition> matchConditions = (List<EventMatchCondition>) descriptor.getConfig().get("matchConditions");
 		boolean matchConditionsMet = matchConditions == null || matchConditions.stream().allMatch(c -> matches(c, event));
@@ -60,8 +63,6 @@ public class GenericEventTrigger implements ITrigger {
 	}
 
 	private boolean matches(EventMatchCondition condition, EventDescriptor event) {
-		if (condition.getKey() != null && !condition.getKey().equals(event.key)) return false;
-		
 		Object payload = event.message;
 		String payloadSelector = condition.getPayloadSelector();
 		if (payloadSelector != null) {
@@ -83,20 +84,20 @@ public class GenericEventTrigger implements ITrigger {
 		return true;
 	}
 	
-	public static TriggerDescriptor buildTrigger(String topic,
+	public static TriggerDescriptor buildTrigger(String topic, String key,
 			List<EventMatchCondition> matchConditions, List<EventMatchCondition> errorConditions) {
 		TriggerDescriptor trigger = new TriggerDescriptor();
 		trigger.setType(TYPE);
 		trigger.getConfig().put("topic", topic);
+		trigger.getConfig().put("key", key);
 		trigger.getConfig().put("matchConditions", matchConditions);
 		trigger.getConfig().put("errorConditions", errorConditions);
 		return trigger;
 	}
 	
 	@Data
-	@Builder
+	@AllArgsConstructor
 	public static class EventMatchCondition {
-		private String key;
 		private String payloadSelector;
 		private String valuePattern;
 		private Object value;

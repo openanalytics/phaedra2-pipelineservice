@@ -31,13 +31,13 @@ public class LinkPlateDefinitionAction extends EventBasedAction {
 	@Override
 	protected EventDescriptor buildActionStartMessage(PipelineExecutionContext context) {
 		Long plateId = getRequiredVar("plateId", context, null);
-		String source = context.resolveVar("currentStep.trigger.config.source", "template");
+		String source = context.resolveVar("currentStep.action.config.source", "template");
 		if (!source.toLowerCase().equals("template")) {
 			//TODO Support other link sources
 			throw new IllegalArgumentException(String.format("Unsupported link source: %s", source));
 		}
 		
-		String templateName = context.resolveVar("currentStep.trigger.config.name", "${barcode}");
+		String templateName = context.resolveVar("currentStep.action.config.name", "${barcode}");
 		templateName = context.resolveVars(templateName);
 		
 		List<PlateTemplateDTO> templates = plateServiceClient.getPlateTemplatesByName(templateName);
@@ -57,13 +57,14 @@ public class LinkPlateDefinitionAction extends EventBasedAction {
 	@Override
 	public TriggerDescriptor getActionCompleteTrigger(PipelineExecutionContext context) {
 		Long plateId = context.resolveVar("plateId", null);
-		EventMatchCondition matcher = EventMatchCondition.builder().key(EVENT_NOTIFY_PLATE_DEF_LINKED)
-				.payloadSelector(JSON_PLATE_ID_SELECTOR).value(plateId).build();
 		
-		EventMatchCondition isError = EventMatchCondition.builder().key(EVENT_NOTIFY_PLATE_DEF_LINKED)
-				.payloadSelector(JSON_OUTCOME_SELECTOR).value("ERROR").build();
+		EventMatchCondition matchesPlateId = new EventMatchCondition(JSON_PLATE_ID_SELECTOR, null, plateId); 
+		EventMatchCondition isOK = new EventMatchCondition(JSON_OUTCOME_SELECTOR, null, "OK");
+		EventMatchCondition isError = new EventMatchCondition(JSON_OUTCOME_SELECTOR, null, "ERROR");
 		
-		return GenericEventTrigger.buildTrigger(TOPIC, Arrays.asList(isError), Arrays.asList(matcher));
+		return GenericEventTrigger.buildTrigger(TOPIC, EVENT_NOTIFY_PLATE_DEF_LINKED,
+				Arrays.asList(matchesPlateId, isOK),
+				Arrays.asList(matchesPlateId, isError));
 	}
 
 }
