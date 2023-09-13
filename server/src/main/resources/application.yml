@@ -30,12 +30,6 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: ${keycloak-base-url}/auth/realms/phaedra2/protocol/openid-connect/certs
-  kafka:
-    producer:
-      bootstrap-servers: localhost:9092
-    consumer:
-      bootstrap-servers: localhost:9092
-      group-id: phaedra2
 
 logging:
   level:
