@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.kafka.annotation.EnableKafka;
-import org.springframework.kafka.support.converter.BytesJsonMessageConverter;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -96,10 +95,5 @@ public class PipelineServiceApplication {
     public PhaedraRestTemplate restTemplate() {
         PhaedraRestTemplate restTemplate = new PhaedraRestTemplate();
         return restTemplate;
-    }
-    
-    @Bean
-    public BytesJsonMessageConverter messageConverter() {
-    	return new BytesJsonMessageConverter();
     }
 }
