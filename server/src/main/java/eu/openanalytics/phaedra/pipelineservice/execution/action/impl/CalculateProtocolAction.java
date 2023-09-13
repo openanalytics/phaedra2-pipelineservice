@@ -20,9 +20,9 @@ public class CalculateProtocolAction extends EventBasedAction {
 	
 	@Override
 	protected EventDescriptor buildActionStartMessage(PipelineExecutionContext context) {
-		Long plateId = getRequiredVar("plateId", context, null);
-		Long measId = getRequiredVar("measurementId", context, null);
-		Long protocolId = getRequiredVar("currentStep.action.config.id", context, null);
+		Number plateId = getRequiredVar("plateId", context, null);
+		Number measId = getRequiredVar("measurementId", context, null);
+		Number protocolId = getRequiredVar("currentStep.action.config.id", context, null);
 		
 		String msgToPost = String.format("{ 'plateId': %d, 'measId': %d, 'protocolId': %d }", plateId, measId, protocolId);
 		return EventDescriptor.of(TOPIC, EVENT_REQ_PLATE_CALCULATION, msgToPost);
@@ -30,7 +30,7 @@ public class CalculateProtocolAction extends EventBasedAction {
 	
 	@Override
 	public TriggerDescriptor getActionCompleteTrigger(PipelineExecutionContext context) {
-		Long plateId = context.resolveVar("plateId", null);
+		Number plateId = context.resolveVar("plateId", null);
 
 		EventMatchCondition matchesPlateId = new EventMatchCondition(JSON_PLATE_ID_SELECTOR, null, plateId);
 		EventMatchCondition isOK = new EventMatchCondition(JSON_CALC_STATUS_SELECTOR, null, "1");

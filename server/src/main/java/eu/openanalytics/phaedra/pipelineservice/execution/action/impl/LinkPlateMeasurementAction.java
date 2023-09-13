@@ -31,10 +31,10 @@ public class LinkPlateMeasurementAction extends EventBasedAction {
 	@Override
 	protected EventDescriptor buildActionStartMessage(PipelineExecutionContext context) {
 		String barcode = getRequiredVar("barcode", context, null);
-		Long measId = getRequiredVar("measurementId", context, null);
-		Long projectId = getRequiredVar("currentStep.action.config.projectId", context, null);
+		Number measId = getRequiredVar("measurementId", context, null);
+		Number projectId = getRequiredVar("currentStep.action.config.projectId", context, null);
 		
-		List<Long> experimentIds = plateServiceClient.getExperiments(projectId).stream().map(exp -> exp.getId()).toList();
+		List<Long> experimentIds = plateServiceClient.getExperiments(projectId.longValue()).stream().map(exp -> exp.getId()).toList();
 		List<PlateDTO> matchingPlates = plateServiceClient.getPlatesByBarcode(barcode).stream()
 				.filter(plate -> experimentIds.contains(plate.getExperimentId())).toList();
 		
@@ -55,7 +55,7 @@ public class LinkPlateMeasurementAction extends EventBasedAction {
 	
 	@Override
 	public TriggerDescriptor getActionCompleteTrigger(PipelineExecutionContext context) {
-		Long measId = context.resolveVar("measurementId", null);
+		Number measId = context.resolveVar("measurementId", null);
 		
 		EventMatchCondition matchesMeasId = new EventMatchCondition(JSON_MEAS_ID_SELECTOR, null, measId); 
 		EventMatchCondition isOK = new EventMatchCondition(JSON_OUTCOME_SELECTOR, null, "OK");

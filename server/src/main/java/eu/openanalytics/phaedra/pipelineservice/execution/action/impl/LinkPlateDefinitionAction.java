@@ -30,7 +30,7 @@ public class LinkPlateDefinitionAction extends EventBasedAction {
 	
 	@Override
 	protected EventDescriptor buildActionStartMessage(PipelineExecutionContext context) {
-		Long plateId = getRequiredVar("plateId", context, null);
+		Number plateId = getRequiredVar("plateId", context, null);
 		String source = context.resolveVar("currentStep.action.config.source", "template");
 		if (!source.toLowerCase().equals("template")) {
 			//TODO Support other link sources
@@ -56,7 +56,7 @@ public class LinkPlateDefinitionAction extends EventBasedAction {
 	
 	@Override
 	public TriggerDescriptor getActionCompleteTrigger(PipelineExecutionContext context) {
-		Long plateId = context.resolveVar("plateId", null);
+		Number plateId = context.resolveVar("plateId", null);
 		
 		EventMatchCondition matchesPlateId = new EventMatchCondition(JSON_PLATE_ID_SELECTOR, null, plateId); 
 		EventMatchCondition isOK = new EventMatchCondition(JSON_OUTCOME_SELECTOR, null, "OK");
