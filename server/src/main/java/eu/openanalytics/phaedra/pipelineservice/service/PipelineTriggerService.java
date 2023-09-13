@@ -121,21 +121,23 @@ public class PipelineTriggerService {
 	
 	public boolean matchAndFire(EventDescriptor event) {
 		for (RegisteredTrigger rt: registeredTriggers.values()) {
-			PipelineExecutionContext ctx = buildExecutionContext(rt, false);
 			ITrigger trigger = triggerRegistry.resolve(rt.descriptor);
-			
+
+			// Build a transient context to be used by the trigger.
+			// If the trigger matches or errors, this context will be replaced by a real execution context.
+			PipelineExecutionContext ctx = buildExecutionContext(rt, false, null);
 			TriggerMatchType matchType = trigger.matches(event, rt.descriptor, ctx);
 			
 			if (matchType == TriggerMatchType.Match) {
 				logger.debug(String.format("Firing trigger [pipeline %d] [step %d]", rt.pipelineId, rt.stepNr));
 				
-				ctx = buildExecutionContext(rt, true);
+				ctx = buildExecutionContext(rt, true, ctx);
 				ctx.setVar(String.format("step.%d.trigger.message", rt.stepNr) , event.message);
 				
 				handleTriggerFired(rt, ctx);
 				return true;
 			} else if (matchType == TriggerMatchType.Error) {
-				ctx = buildExecutionContext(rt, true);
+				ctx = buildExecutionContext(rt, true, ctx);
 				ctx.setVar(String.format("step.%d.trigger.message", rt.stepNr) , event.message);
 				handleTriggerError(rt, ctx, String.format("%s: %s", event.key, event.message));
 				return true;
@@ -165,7 +167,7 @@ public class PipelineTriggerService {
 		return descriptor;
 	}
 	
-	private PipelineExecutionContext buildExecutionContext(RegisteredTrigger trigger, boolean createNewExecution) {
+	private PipelineExecutionContext buildExecutionContext(RegisteredTrigger trigger, boolean createNewExecution, PipelineExecutionContext previousCtx) {
 		// Look up the pipeline and parse its config.
 		PipelineDefinition def = definitionService.findById(trigger.pipelineId)
 				.orElseThrow(() -> new IllegalArgumentException(String.format("Invalid pipeline ID: %d", trigger.pipelineId)));
@@ -183,7 +185,11 @@ public class PipelineTriggerService {
 					.orElseThrow(() -> new IllegalArgumentException(String.format("Invalid pipeline execution ID: %d", trigger.executionId)));
 		}
 
-		return PipelineExecutionContext.build(def, exec);
+		PipelineExecutionContext context = PipelineExecutionContext.build(def, exec);
+		if (previousCtx != null) {
+			context.executionVariables.putAll(previousCtx.executionVariables);
+		}
+		return context;
 	}
 	
 	private void handleTriggerFired(RegisteredTrigger trigger, PipelineExecutionContext context) {
