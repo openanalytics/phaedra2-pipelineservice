@@ -12,6 +12,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.zaxxer.hikari.HikariConfig;
@@ -21,6 +22,7 @@ import eu.openanalytics.phaedra.plateservice.client.config.PlateServiceClientAut
 import eu.openanalytics.phaedra.util.PhaedraRestTemplate;
 import eu.openanalytics.phaedra.util.auth.AuthenticationConfigHelper;
 import eu.openanalytics.phaedra.util.auth.AuthorizationServiceFactory;
+import eu.openanalytics.phaedra.util.auth.ClientCredentialsTokenGenerator;
 import eu.openanalytics.phaedra.util.auth.IAuthorizationService;
 import eu.openanalytics.phaedra.util.jdbc.JDBCUtils;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -81,9 +83,14 @@ public class PipelineServiceApplication {
 		return new OpenAPI().addServersItem(server);
 	}
 	
+    @Bean
+    public ClientCredentialsTokenGenerator ccTokenGenerator(ClientRegistrationRepository clientRegistrationRepository) {
+    	return new ClientCredentialsTokenGenerator("keycloak", clientRegistrationRepository);
+    }
+
 	@Bean
-	public IAuthorizationService authService() {
-		return AuthorizationServiceFactory.create();
+	public IAuthorizationService authService(ClientCredentialsTokenGenerator ccTokenGenerator) {
+		return AuthorizationServiceFactory.create(ccTokenGenerator);
 	}
 
 	@Bean
