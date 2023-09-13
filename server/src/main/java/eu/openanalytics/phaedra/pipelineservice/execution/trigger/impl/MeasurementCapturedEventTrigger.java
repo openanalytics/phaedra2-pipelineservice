@@ -1,11 +1,14 @@
 package eu.openanalytics.phaedra.pipelineservice.execution.trigger.impl;
 
+import org.springframework.stereotype.Component;
+
 import eu.openanalytics.phaedra.pipelineservice.execution.PipelineExecutionContext;
 import eu.openanalytics.phaedra.pipelineservice.execution.action.impl.CaptureMeasurementAction;
 import eu.openanalytics.phaedra.pipelineservice.execution.event.EventDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerMatchType;
 
+@Component
 public class MeasurementCapturedEventTrigger extends GenericEventTrigger {
 
 	private static final String TYPE = "MeasurementCaptured";
