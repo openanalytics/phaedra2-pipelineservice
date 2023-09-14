@@ -2,12 +2,15 @@ package eu.openanalytics.phaedra.pipelineservice.execution.action.impl;
 
 import java.util.Arrays;
 
+import org.springframework.stereotype.Component;
+
 import eu.openanalytics.phaedra.pipelineservice.execution.PipelineExecutionContext;
 import eu.openanalytics.phaedra.pipelineservice.execution.event.EventDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.impl.GenericEventTrigger;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.impl.GenericEventTrigger.EventMatchCondition;
 
+@Component
 public class CalculateProtocolAction extends EventBasedAction {
 
 	private static final String TOPIC = "calculations";
