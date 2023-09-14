@@ -238,6 +238,8 @@ public class PipelineTriggerService {
 		logger.debug(String.format("Invoking action %s [pipeline %d] [step %d]", actionToInvoke.getType(), context.definition.getId(), trigger.stepNr));
 		try {
 			actionToInvoke.invoke(context);
+			context.updateExecutionVariables();
+			executionService.update(context.execution);
 		} catch (Throwable t) {
 			handleTriggerError(trigger, context, t.getMessage());
 		}
