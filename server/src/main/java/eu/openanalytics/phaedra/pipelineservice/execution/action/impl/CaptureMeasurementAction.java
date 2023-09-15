@@ -33,7 +33,7 @@ public class CaptureMeasurementAction extends EventBasedAction {
 
 		String captureConfigId = getRequiredVar("currentStep.action.config.captureConfigId", context, null);
 		
-		String msgToPost = String.format("{ 'sourcePath': '%s', 'captureConfigId': '%s' }", sourcePath, captureConfigId);
+		String msgToPost = String.format("{ \"sourcePath\": \"%s\", \"captureConfigId\": \"%s\" }", sourcePath, captureConfigId);
 		return EventDescriptor.of(DC_TOPIC, DC_KEY_REQUEST_CAPTURE_JOB, msgToPost);
 	}
 

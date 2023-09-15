@@ -50,7 +50,7 @@ public class LinkPlateDefinitionAction extends EventBasedAction {
 		}
 		Long templateId = templates.get(0).getId();
 		
-		String msgToPost = String.format("{ 'plateId': %d, 'templateId': %d }", plateId, templateId);
+		String msgToPost = String.format("{ \"plateId\": %d, \"templateId\": %d }", plateId, templateId);
 		return EventDescriptor.of(TOPIC, EVENT_REQ_PLATE_DEF_LINK, msgToPost);
 	}
 	

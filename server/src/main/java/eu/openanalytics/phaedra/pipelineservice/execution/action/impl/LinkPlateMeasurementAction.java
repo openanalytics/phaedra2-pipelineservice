@@ -49,7 +49,7 @@ public class LinkPlateMeasurementAction extends EventBasedAction {
 		long plateId = matchingPlates.get(0).getId();
 		context.setVar("plateId", plateId);
 		
-		String msgToPost = String.format("{ 'measurementId': %d, 'plateId': %d }", measId, plateId);
+		String msgToPost = String.format("{ \"measurementId\": %d, \"plateId\": %d }", measId, plateId);
 		return EventDescriptor.of(TOPIC, EVENT_REQ_PLATE_MEAS_LINK, msgToPost);
 	}
 	
