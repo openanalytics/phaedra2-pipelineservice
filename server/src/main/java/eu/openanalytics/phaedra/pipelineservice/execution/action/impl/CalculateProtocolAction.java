@@ -36,8 +36,8 @@ public class CalculateProtocolAction extends EventBasedAction {
 		Number plateId = context.resolveVar("plateId", null);
 
 		EventMatchCondition matchesPlateId = new EventMatchCondition(JSON_PLATE_ID_SELECTOR, null, plateId);
-		EventMatchCondition isOK = new EventMatchCondition(JSON_CALC_STATUS_SELECTOR, null, "1");
-		EventMatchCondition isError = new EventMatchCondition(JSON_CALC_STATUS_SELECTOR, null, "-2");
+		EventMatchCondition isOK = new EventMatchCondition(JSON_CALC_STATUS_SELECTOR, null, "CALCULATION_OK");
+		EventMatchCondition isError = new EventMatchCondition(JSON_CALC_STATUS_SELECTOR, null, "CALCULATION_ERROR");
 		
 		return GenericEventTrigger.buildTrigger(TOPIC, EVENT_NOTIFY_CALCULATION_EVENT,
 				Arrays.asList(matchesPlateId, isOK),
