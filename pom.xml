@@ -12,10 +12,6 @@
 	<artifactId>phaedra2-pipelineservice</artifactId>
 	<name>Pipeline Service</name>
 
-	<properties>
-		<java.version>16</java.version>
-	</properties>
-	  
 	<modules>
 		<module>dto</module>
 		<module>server</module>

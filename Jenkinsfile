@@ -73,7 +73,7 @@ pipeline {
             steps {
                 container('builder') {
                     configFileProvider([configFile(fileId: 'maven-settings-rsb', variable: 'MAVEN_SETTINGS_RSB')]) {
-                        sh "mvn -s \$MAVEN_SETTINGS_RSB io.fabric8:docker-maven-plugin:build ${env.MVN_ARGS}"
+                        sh "mvn -s \$MAVEN_SETTINGS_RSB -f server/pom.xml -Pbuild.docker.images docker:build ${env.MVN_ARGS}"
                     }
                 }
             }
@@ -83,7 +83,7 @@ pipeline {
             steps {
                 container('builder') {
                     configFileProvider([configFile(fileId: 'maven-settings-rsb', variable: 'MAVEN_SETTINGS_RSB')]) {
-                        sh "mvn -s \$MAVEN_SETTINGS_RSB io.fabric8:docker-maven-plugin:push -Ddocker.push.registry=${REGISTRY} ${env.MVN_ARGS}"
+                        sh "mvn -s \$MAVEN_SETTINGS_RSB -f server/pom.xml -Pbuild.docker.images docker:push -Ddocker.push.registry=${REGISTRY} ${env.MVN_ARGS}"
                     }
                 }
             }
