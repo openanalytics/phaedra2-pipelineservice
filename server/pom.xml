@@ -2,33 +2,33 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-  
+
 	<parent>
 		<groupId>eu.openanalytics.phaedra</groupId>
 		<artifactId>phaedra2-pipelineservice</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>2.0.2-SNAPSHOT</version>
 	</parent>
-	
+
 	<artifactId>phaedra2-pipelineservice-server</artifactId>
 	<name>phaedra2-pipelineservice-server</name>
 
 	<properties>
         <docker.imageName>openanalytics/${project.parent.artifactId}</docker.imageName>
     </properties>
-	
+
 	<dependencies>
 		<!-- Phaedra dependencies -->
 		<dependency>
 			<groupId>eu.openanalytics.phaedra</groupId>
 			<artifactId>phaedra2-pipelineservice-dto</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.openanalytics.phaedra</groupId>
 			<artifactId>phaedra2-plateservice-client</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>2.0.2-SNAPSHOT</version>
 		</dependency>
-		
+
 		<!-- Apache kafka dependencies-->
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
@@ -38,7 +38,7 @@
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
