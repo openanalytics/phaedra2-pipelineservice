@@ -1,22 +1,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>eu.openanalytics.phaedra</groupId>
         <artifactId>phaedra2-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../phaedra2-parent</relativePath>
+        <version>2.0.2</version>
     </parent>
     <packaging>pom</packaging>
-    
+
 	<artifactId>phaedra2-pipelineservice</artifactId>
 	<name>Pipeline Service</name>
+	<version>2.0.2</version>
 
 	<modules>
 		<module>dto</module>
 		<module>server</module>
 	</modules>
-	
+
     <!-- We cannot specify this in the parent POM, as the repositories are needed to fetch the parent pom.    -->
     <repositories>
         <!-- Maven queries repositories in the order that they are defined here.
@@ -39,6 +39,10 @@
         <repository>
             <id>oa-nexus-snapshots</id>
             <url>https://nexus.openanalytics.eu/repository/snapshots/</url>
+        </repository>
+        <repository>
+            <id>oa-nexus-releases</id>
+            <url>https://nexus.openanalytics.eu/repository/releases/</url>
         </repository>
     </repositories>
 
