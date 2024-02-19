@@ -28,6 +28,16 @@
 			<artifactId>phaedra2-plateservice-client</artifactId>
 			<version>2.0.3-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>eu.openanalytics.phaedra</groupId>
+			<artifactId>phaedra2-measurementservice-client</artifactId>
+			<version>2.0.3-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.openanalytics.phaedra</groupId>
+			<artifactId>phaedra2-metadataservice-client</artifactId>
+			<version>2.0.3-SNAPSHOT</version>
+		</dependency>
 
 		<!-- Apache kafka dependencies-->
 		<dependency>
