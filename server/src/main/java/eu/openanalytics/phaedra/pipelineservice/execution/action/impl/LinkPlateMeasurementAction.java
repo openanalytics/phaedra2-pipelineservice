@@ -2,6 +2,7 @@ package eu.openanalytics.phaedra.pipelineservice.execution.action.impl;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,8 @@ public class LinkPlateMeasurementAction extends EventBasedAction {
 		String sourcePath = properties.stream().filter(prop -> prop.getPropertyName().equalsIgnoreCase("sourcepath")).map(prop -> prop.getPropertyValue()).findAny().orElse(barcode);
 		
 		int experimentNameRegexGroup = Integer.valueOf(context.resolveVar(VAR_EXP_NAME_PATTERN_GROUP, "1"));
-		String experimentName = Pattern.compile(experimentNamePattern).matcher(sourcePath).group(experimentNameRegexGroup);
+		Matcher sourcePathMatcher = Pattern.compile(experimentNamePattern).matcher(sourcePath);
+		String experimentName = sourcePathMatcher.matches() ? sourcePathMatcher.group(experimentNameRegexGroup) : null;
 		if (experimentName == null) {
 			throw new RuntimeException(String.format("Failed to resolve experiment name in '%s' using pattern '%s'", sourcePath, experimentNamePattern));
 		}
