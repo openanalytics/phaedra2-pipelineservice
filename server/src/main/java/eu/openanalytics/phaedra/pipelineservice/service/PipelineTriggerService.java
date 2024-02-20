@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import eu.openanalytics.phaedra.pipelineservice.dto.PipelineDefinition;
@@ -26,6 +27,7 @@ import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerRegistr
 import eu.openanalytics.phaedra.pipelineservice.model.config.PipelineStep;
 import eu.openanalytics.phaedra.pipelineservice.service.PipelineDefinitionService.PipelineDefinitionChangeListener;
 import eu.openanalytics.phaedra.pipelineservice.service.PipelineExecutionService.PipelineExecutionChangeListener;
+import eu.openanalytics.phaedra.util.auth.IAuthorizationService;
 
 //TODO Handle errors
 @Service
@@ -42,6 +44,12 @@ public class PipelineTriggerService {
 	
 	@Autowired
 	private TriggerRegistry triggerRegistry;
+	
+	@Autowired
+	private IAuthorizationService authService;
+	
+	@Autowired
+	protected KafkaTemplate<String, String> kafkaTemplate;
 	
 	private Map<String, RegisteredTrigger> registeredTriggers = new ConcurrentHashMap<>();
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -144,6 +152,11 @@ public class PipelineTriggerService {
 			}
 		}
 		return false;
+	}
+	
+	public void postKafkaMessage(String topic, String key, String message) {
+		authService.performAccessCheck(p -> authService.hasAdminAccess());
+		kafkaTemplate.send(topic, key, message);
 	}
 	
 	private TriggerDescriptor getStepTrigger(int stepNr, PipelineExecutionContext context) {
