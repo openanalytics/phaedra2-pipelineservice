@@ -15,6 +15,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 
+import eu.openanalytics.phaedra.measurementservice.client.config.MeasurementServiceClientAutoConfiguration;
+import eu.openanalytics.phaedra.metadataservice.client.config.MetadataServiceClientAutoConfiguration;
 import eu.openanalytics.phaedra.plateservice.client.config.PlateServiceClientAutoConfiguration;
 import eu.openanalytics.phaedra.util.PhaedraRestTemplate;
 import eu.openanalytics.phaedra.util.auth.AuthenticationConfigHelper;
@@ -31,7 +33,9 @@ import io.swagger.v3.oas.models.servers.Server;
 @EnableKafka
 @EnableWebSecurity
 @Import({
-    PlateServiceClientAutoConfiguration.class
+    PlateServiceClientAutoConfiguration.class,
+    MetadataServiceClientAutoConfiguration.class,
+    MeasurementServiceClientAutoConfiguration.class
 })
 public class PipelineServiceApplication {
 
