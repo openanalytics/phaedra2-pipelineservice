@@ -15,9 +15,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
+import eu.openanalytics.phaedra.measurementservice.client.config.MeasurementServiceClientAutoConfiguration;
+import eu.openanalytics.phaedra.metadataservice.client.config.MetadataServiceClientAutoConfiguration;
 import eu.openanalytics.phaedra.plateservice.client.config.PlateServiceClientAutoConfiguration;
 import eu.openanalytics.phaedra.util.PhaedraRestTemplate;
 import eu.openanalytics.phaedra.util.auth.AuthenticationConfigHelper;
@@ -34,7 +33,9 @@ import io.swagger.v3.oas.models.servers.Server;
 @EnableKafka
 @EnableWebSecurity
 @Import({
-    PlateServiceClientAutoConfiguration.class
+    PlateServiceClientAutoConfiguration.class,
+    MetadataServiceClientAutoConfiguration.class,
+    MeasurementServiceClientAutoConfiguration.class
 })
 public class PipelineServiceApplication {
 
@@ -51,30 +52,7 @@ public class PipelineServiceApplication {
 
 	@Bean
 	public DataSource dataSource() {
-		String url = environment.getProperty("DB_URL");
-		if (url == null || url.trim().isEmpty()) {
-			throw new RuntimeException("No database URL configured: " + environment.getProperty("DB_URL"));
-		}
-		String driverClassName = JDBCUtils.getDriverClassName(url);
-		if (driverClassName == null) {
-			throw new RuntimeException("Unsupported database type: " + url);
-		}
-
-		HikariConfig config = new HikariConfig();
-		config.setAutoCommit(false);
-		config.setMaximumPoolSize(20);
-		config.setConnectionTimeout(60000);
-		config.setJdbcUrl(url);
-		config.setDriverClassName(driverClassName);
-		config.setUsername(environment.getProperty("DB_USERNAME"));
-		config.setPassword(environment.getProperty("DB_PASSWORD"));
-
-		String schema = environment.getProperty("DB_SCHEMA");
-		if (schema != null && !schema.trim().isEmpty()) {
-			config.setConnectionInitSql("set search_path to " + schema);
-		}
-
-		return new HikariDataSource(config);
+		return JDBCUtils.createDataSource(environment);
 	}
 
 	@Bean

@@ -47,25 +47,33 @@ public class PipelineExecutionContext {
 	
 	@SuppressWarnings("unchecked")
 	public <T> T resolveVar(String key, T defaultValue) {
+		String parsedKey = key;
 		if (key.contains("currentStep.")) {
 			int stepNr = execution.getCurrentStep();
-			key = key.replace("currentStep.", String.format("step.%d.", stepNr));
+			parsedKey = key.replace("currentStep.", String.format("step.%d.", stepNr));
 		}
-		Object value = executionVariables.get(key);
+		
+		Object value = executionVariables.get(parsedKey);
 		if (value == null) {
-			Matcher m = TRIGGER_CFG_PATTERN.matcher(key);
+			Matcher m = TRIGGER_CFG_PATTERN.matcher(parsedKey);
 			if (m.matches()) {
 				int stepNr = Integer.parseInt(m.group(1));
 				String cfgKey = m.group(2);
 				value = config.getSteps().get(stepNr - 1).getTrigger().getConfig().get(cfgKey);
 			}
-			m = ACTION_CFG_PATTERN.matcher(key);
+			m = ACTION_CFG_PATTERN.matcher(parsedKey);
 			if (m.matches()) {
 				int stepNr = Integer.parseInt(m.group(1));
 				String cfgKey = m.group(2);
 				value = config.getSteps().get(stepNr - 1).getAction().getConfig().get(cfgKey);
 			}
 		}
+		
+		if (value == null && !key.contains("currentStep.")) {
+			// If not found, try again in the currentStep action config
+			value = resolveVar(String.format("currentStep.action.config.%s", key), defaultValue);
+		}
+		
 		if (value == null) return defaultValue;
 		return (T) value;
 	}
