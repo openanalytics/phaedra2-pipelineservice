@@ -52,8 +52,7 @@ public class PipelineDefinitionController {
 	    	PipelineDefinition result = pipelineDefinitionService.update(definition);
 	        return new ResponseEntity<>(result, HttpStatus.OK);
 		} catch (IllegalArgumentException e) {
-//			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-			return ResponseEntity.badRequest().body(definition);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
 		}
     }
 
