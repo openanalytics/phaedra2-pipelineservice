@@ -47,13 +47,14 @@ public class PipelineDefinitionController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PipelineDefinition> updatePipelineDefinition(@PathVariable long id, @RequestBody PipelineDefinition definition) {
-//    	try {
+    	try {
     		definition.setId(id);
 	    	PipelineDefinition result = pipelineDefinitionService.update(definition);
 	        return new ResponseEntity<>(result, HttpStatus.OK);
-//		} catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 //			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-//		}
+			return ResponseEntity.badRequest().body(definition);
+		}
     }
 
     @DeleteMapping("/{id}")
