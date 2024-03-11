@@ -24,7 +24,7 @@ public class PipelineDefinitionController {
 
 	@Autowired
 	private PipelineDefinitionService pipelineDefinitionService;
-	
+
 	@GetMapping("/{id}")
 	public ResponseEntity<PipelineDefinition> getPipelineDefinition(@PathVariable long id) {
 		return ResponseEntity.of(pipelineDefinitionService.findById(id));
@@ -34,7 +34,7 @@ public class PipelineDefinitionController {
 	public ResponseEntity<List<PipelineDefinition>> getAllPipelineDefinitions() {
 		return ResponseEntity.ok(pipelineDefinitionService.findAll(null));
 	}
-	
+
 	@PostMapping
     public ResponseEntity<PipelineDefinition> createPipelineDefinition(@RequestBody PipelineDefinition definition) {
 		try {
@@ -42,20 +42,20 @@ public class PipelineDefinitionController {
 			return new ResponseEntity<>(result, HttpStatus.CREATED);
 		} catch (IllegalArgumentException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-		} 
+		}
     }
-	
+
     @PutMapping("/{id}")
     public ResponseEntity<PipelineDefinition> updatePipelineDefinition(@PathVariable long id, @RequestBody PipelineDefinition definition) {
-    	try {
+//    	try {
     		definition.setId(id);
 	    	PipelineDefinition result = pipelineDefinitionService.update(definition);
 	        return new ResponseEntity<>(result, HttpStatus.OK);
-		} catch (IllegalArgumentException e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-		} 
+//		} catch (IllegalArgumentException e) {
+//			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+//		}
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePipelineDefinition(@PathVariable long id) {
     	try {

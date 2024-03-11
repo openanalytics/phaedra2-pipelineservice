@@ -88,7 +88,7 @@ public class PipelineDefinitionService {
 				.findById(definition.getId())
 				.orElseThrow(() -> new IllegalArgumentException("Pipeline definition not found with ID " + definition.getId()));
 
-//		authService.performOwnershipCheck(existingDefinition.getCreatedBy());
+		authService.performOwnershipCheck(existingDefinition.getCreatedBy());
 
 		boolean statusChanged = definition.getStatus() != existingDefinition.getStatus();
 		boolean configChanged = !StringUtils.equals(definition.getConfig(), existingDefinition.getConfig());
