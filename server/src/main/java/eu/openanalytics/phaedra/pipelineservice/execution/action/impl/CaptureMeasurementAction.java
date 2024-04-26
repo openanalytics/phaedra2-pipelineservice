@@ -51,7 +51,7 @@ public class CaptureMeasurementAction extends EventBasedAction {
 	
 	public static TriggerDescriptor buildActionCompleteTrigger(String sourcePath, String sourcePathPattern) {
 		EventMatchCondition matchesSourcePath = new EventMatchCondition(JSON_SOURCE_PATH_SELECTOR, sourcePathPattern, sourcePath); 
-		EventMatchCondition hasMeasId = new EventMatchCondition(JSON_MEAS_ID_SELECTOR, ".+", null);
+		EventMatchCondition hasMeasId = new EventMatchCondition(JSON_MEAS_ID_SELECTOR, "\\d+", null);
 		EventMatchCondition isRunning = new EventMatchCondition(JSON_STATUS_SELECTOR, null, "Running");
 		EventMatchCondition isError = new EventMatchCondition(JSON_STATUS_SELECTOR, null, "Error");
 		

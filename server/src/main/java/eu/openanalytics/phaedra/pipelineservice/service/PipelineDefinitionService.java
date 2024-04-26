@@ -28,14 +28,14 @@ public class PipelineDefinitionService {
 
 	@Autowired
 	private PipelineDefinitionRepo pipelineDefinitionRepo;
-	
+
 	@Autowired
 	private IAuthorizationService authService;
-	
+
 	private List<PipelineDefinitionChangeListener> changeListeners = new ArrayList<>();
-	
+
 	private ModelMapper modelMapper = new ModelMapper();
-	
+
 	@PostConstruct
 	public void initializeDefinitionTriggers() {
 		ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
@@ -44,22 +44,22 @@ public class PipelineDefinitionService {
 			executorService.shutdown();
 		}, 10, TimeUnit.SECONDS);
 	}
-	
+
 	public Optional<PipelineDefinition> findById(long id) {
 		return pipelineDefinitionRepo.findById(id);
 	}
-	
+
 	public List<PipelineDefinition> findByName(String name) {
 		return pipelineDefinitionRepo.findAllByName(name);
 	}
-	
+
 	public Optional<PipelineDefinition> findFirst(Predicate<PipelineDefinition> filter) {
 		for (PipelineDefinition def: pipelineDefinitionRepo.findAll()) {
 			if (filter.test(def)) return Optional.of(def);
 		}
 		return Optional.empty();
 	}
-	
+
 	public List<PipelineDefinition> findAll(Predicate<PipelineDefinition> filter) {
 		List<PipelineDefinition> matches = new ArrayList<>();
 		for (PipelineDefinition def: pipelineDefinitionRepo.findAll()) {
@@ -67,7 +67,7 @@ public class PipelineDefinitionService {
 		}
 		return matches;
 	}
-	
+
 	public PipelineDefinition createNew(PipelineDefinition definition) {
 		authService.performAccessCheck(p -> authService.hasUserAccess());
 
@@ -77,11 +77,11 @@ public class PipelineDefinitionService {
 		validate(definition, true);
 		return pipelineDefinitionRepo.save(definition);
 	}
-	
+
 	public boolean exists(long id) {
 		return pipelineDefinitionRepo.existsById(id);
 	}
-	
+
 	public PipelineDefinition update(PipelineDefinition definition) {
 		// Look up the existing definition
 		PipelineDefinition existingDefinition = pipelineDefinitionRepo
@@ -89,15 +89,15 @@ public class PipelineDefinitionService {
 				.orElseThrow(() -> new IllegalArgumentException("Pipeline definition not found with ID " + definition.getId()));
 
 		authService.performOwnershipCheck(existingDefinition.getCreatedBy());
-		
+
 		boolean statusChanged = definition.getStatus() != existingDefinition.getStatus();
 		boolean configChanged = !StringUtils.equals(definition.getConfig(), existingDefinition.getConfig());
-		
+
 		// Map the updated fields onto the existing definition
 		modelMapper.typeMap(PipelineDefinition.class, PipelineDefinition.class)
 			.setPropertyCondition(Conditions.isNotNull())
 			.map(definition, existingDefinition);
-		
+
 		if (configChanged) {
 			existingDefinition.setVersionNumber(VersionUtils.generateNewVersion(existingDefinition.getVersionNumber()));
 		}
@@ -110,14 +110,14 @@ public class PipelineDefinitionService {
 		if (configChanged) handleConfigChanged(newDefinition);
 		return newDefinition;
 	}
-	
+
 	public void delete(long definitionId) {
 		PipelineDefinition def = findById(definitionId).orElseThrow(() -> new IllegalArgumentException("Invalid pipeline ID: " + definitionId));
 		authService.performOwnershipCheck(def.getCreatedBy());
-		
+
 		pipelineDefinitionRepo.deleteById(definitionId);
 	}
-	
+
 	public void addPipelineDefinitionChangeListener(PipelineDefinitionChangeListener listener) {
 		changeListeners.add(listener);
 	}
@@ -130,22 +130,22 @@ public class PipelineDefinitionService {
 		Assert.isTrue(VersionUtils.isValidVersionNumber(def.getVersionNumber()), "Pipeline definition must have a valid version number");
 		//TODO Parse and validate config
 	}
-	
+
 	private void handleStatusChanged(PipelineDefinition definition) {
 		for (PipelineDefinitionChangeListener l: changeListeners) {
 			l.onStatusChanged(definition);
 		}
 	}
-	
+
 	private void handleConfigChanged(PipelineDefinition definition) {
 		for (PipelineDefinitionChangeListener l: changeListeners) {
 			l.onConfigChanged(definition);
 		}
 	}
-	
+
 	public static class PipelineDefinitionChangeListener {
 		public void onStatusChanged(PipelineDefinition def) {}
 		public void onConfigChanged(PipelineDefinition def) {}
 	}
-	
+
 }

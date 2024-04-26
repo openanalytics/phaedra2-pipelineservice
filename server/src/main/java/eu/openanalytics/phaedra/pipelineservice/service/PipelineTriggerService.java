@@ -145,10 +145,16 @@ public class PipelineTriggerService {
 				handleTriggerFired(rt, ctx);
 				return true;
 			} else if (matchType == TriggerMatchType.Error) {
-				ctx = buildExecutionContext(rt, true, ctx);
-				ctx.setVar(String.format("step.%d.trigger.message", rt.stepNr) , event.message);
-				handleTriggerError(rt, ctx, String.format("%s: %s", event.key, event.message));
-				return true;
+				if (rt.stepNr == PIPELINE_FIRST_STEP) {
+					// In case a pipeline's initial trigger fails, do not start an execution.
+					// Treat this error as a NoMatch
+					return false;
+				} else {
+					ctx = buildExecutionContext(rt, true, ctx);
+					ctx.setVar(String.format("step.%d.trigger.message", rt.stepNr) , event.message);
+					handleTriggerError(rt, ctx, String.format("%s: %s", event.key, event.message));
+					return true;
+				}
 			}
 		}
 		return false;

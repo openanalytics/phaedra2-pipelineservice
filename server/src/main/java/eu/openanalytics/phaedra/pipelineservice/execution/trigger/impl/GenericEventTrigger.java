@@ -78,6 +78,9 @@ public class GenericEventTrigger implements ITrigger {
 			}
 		}
 		
+		logger.debug(String.format("Checking event condition (pattern '%s', value '%s') against payload '%s'",
+				condition.getValuePattern(), condition.getValue(), payload));
+		
 		String pattern = condition.getValuePattern();
 		boolean matchesPattern = pattern == null || Pattern.compile(pattern).matcher(String.valueOf(payload)).matches();
 		if (!matchesPattern) return false;
