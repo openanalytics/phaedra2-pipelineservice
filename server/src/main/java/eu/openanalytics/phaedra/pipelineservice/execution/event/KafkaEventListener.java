@@ -20,7 +20,7 @@ public class KafkaEventListener {
 	
 	@KafkaListener(topicPattern = ".*", groupId = "pipeline-service")
 	public void processEvent(String message, 
-			@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String key,
+			@Header(KafkaHeaders.RECEIVED_KEY) String key,
 			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		
 		EventDescriptor event = EventDescriptor.of(topic, key, message);
