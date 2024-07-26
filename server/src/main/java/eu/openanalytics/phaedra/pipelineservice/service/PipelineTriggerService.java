@@ -137,7 +137,7 @@ public class PipelineTriggerService {
 			TriggerMatchType matchType = trigger.matches(event, rt.descriptor, ctx);
 			
 			if (matchType == TriggerMatchType.Match) {
-				logger.debug(String.format("Firing trigger [pipeline %d] [step %d]", rt.pipelineId, rt.stepNr));
+				logger.debug(String.format("Firing trigger [pipeline %d] [step %d] due to event: %s", rt.pipelineId, rt.stepNr, event));
 				
 				ctx = buildExecutionContext(rt, true, ctx);
 				ctx.setVar(String.format("step.%d.trigger.message", rt.stepNr) , event.message);
