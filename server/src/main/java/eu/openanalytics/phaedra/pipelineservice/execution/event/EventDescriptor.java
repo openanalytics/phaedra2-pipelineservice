@@ -1,5 +1,7 @@
 package eu.openanalytics.phaedra.pipelineservice.execution.event;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class EventDescriptor {
 	
 	public String topic;
@@ -16,6 +18,6 @@ public class EventDescriptor {
 	
 	@Override
 	public String toString() {
-		return String.format("Event [topic=%s] [key=%s]: %s", topic, key, message);
+		return String.format("Event [topic=%s] [key=%s]: %s", topic, key, StringUtils.abbreviate(message, 50));
 	}
 }
