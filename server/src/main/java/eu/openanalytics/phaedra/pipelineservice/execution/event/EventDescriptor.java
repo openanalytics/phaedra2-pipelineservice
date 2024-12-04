@@ -11,7 +11,7 @@ public class EventDescriptor {
 	public static EventDescriptor of(String topic, String key, String message) {
 		EventDescriptor descriptor = new EventDescriptor();
 		descriptor.topic = topic;
-		descriptor.key = key;
+		descriptor.key = (key == null) ? "" : key;
 		descriptor.message = message;
 		return descriptor;
 	}
