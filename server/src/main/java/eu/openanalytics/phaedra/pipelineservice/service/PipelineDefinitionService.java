@@ -40,7 +40,13 @@ public class PipelineDefinitionService {
 	@EventListener(ApplicationReadyEvent.class)
 	public void initializeDefinitionTriggers() {
 		logger.debug("Initializing all pipelines");
-		pipelineDefinitionRepo.findAll().forEach(pd -> handleStatusChanged(pd));
+		pipelineDefinitionRepo.findAll().forEach(pd -> {
+			try {
+				handleStatusChanged(pd);
+			} catch (Exception e) {
+				logger.warn(String.format("Failed to initialize pipeline %s (%d)", pd.getName(), pd.getId()), e);
+			}
+		});
 	}
 
 	public Optional<PipelineDefinition> findById(long id) {
