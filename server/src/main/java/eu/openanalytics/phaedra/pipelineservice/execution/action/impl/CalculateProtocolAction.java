@@ -27,7 +27,7 @@ public class CalculateProtocolAction extends EventBasedAction {
 		Number measId = getRequiredVar("measurementId", context, null);
 		Number protocolId = getRequiredVar("currentStep.action.config.id", context, null);
 		
-		String msgToPost = String.format("{ \"plateId\": %d, \"measId\": %d, \"protocolId\": %d }", plateId, measId, protocolId);
+		String msgToPost = String.format("{ \"plateIds\": [%d], \"measIds\": { \"%d\": %d }, \"protocolId\": %d }", plateId, plateId, measId, protocolId);
 		return EventDescriptor.of(TOPIC, EVENT_REQ_PLATE_CALCULATION, msgToPost);
 	}
 	
