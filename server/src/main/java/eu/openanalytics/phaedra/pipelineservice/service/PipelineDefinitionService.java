@@ -4,17 +4,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-
-import jakarta.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -35,14 +34,19 @@ public class PipelineDefinitionService {
 	private List<PipelineDefinitionChangeListener> changeListeners = new ArrayList<>();
 
 	private ModelMapper modelMapper = new ModelMapper();
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	@PostConstruct
+	@EventListener(ApplicationReadyEvent.class)
 	public void initializeDefinitionTriggers() {
-		ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-		executorService.schedule(() -> {
-			pipelineDefinitionRepo.findAll().forEach(pd -> handleStatusChanged(pd));
-			executorService.shutdown();
-		}, 10, TimeUnit.SECONDS);
+		logger.debug("Initializing all pipelines");
+		pipelineDefinitionRepo.findAll().forEach(pd -> {
+			try {
+				handleStatusChanged(pd);
+			} catch (Exception e) {
+				logger.warn(String.format("Failed to initialize pipeline %s (%d)", pd.getName(), pd.getId()), e);
+			}
+		});
 	}
 
 	public Optional<PipelineDefinition> findById(long id) {
