@@ -31,8 +31,9 @@ import eu.openanalytics.phaedra.pipelineservice.execution.event.EventDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.TriggerDescriptor;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.impl.GenericEventTrigger;
 import eu.openanalytics.phaedra.pipelineservice.execution.trigger.impl.GenericEventTrigger.EventMatchCondition;
-import eu.openanalytics.phaedra.plateservice.client.PlateServiceClient;
-import eu.openanalytics.phaedra.plateservice.dto.PlateTemplateDTO;
+import eu.openanalytics.phaedra.platedef.client.PlateDefinitionServiceClient;
+import eu.openanalytics.phaedra.platedef.model.PlateTemplate;
+import eu.openanalytics.phaedra.plateservice.enumeration.LinkType;
 
 @Component
 public class LinkPlateDefinitionAction extends EventBasedAction {
@@ -46,31 +47,39 @@ public class LinkPlateDefinitionAction extends EventBasedAction {
 	private static final String JSON_OUTCOME_SELECTOR = "$.outcome";
 
 	@Autowired
-	private PlateServiceClient plateServiceClient;
+	private PlateDefinitionServiceClient plateDefinitionServiceClient;
 	
 	@Override
 	protected EventDescriptor buildActionStartMessage(PipelineExecutionContext context) {
 		Number plateId = getRequiredVar("plateId", context, null);
-		String source = context.resolveVar("currentStep.action.config.source", "template");
-		if (!source.toLowerCase().equals("template")) {
-			//TODO Support other link sources
-			throw new IllegalArgumentException(String.format("Unsupported link source: %s", source));
+		
+		String linkTypeName = context.resolveVar("currentStep.action.config.type", "template");
+		LinkType linkType = LinkType.findByName(linkTypeName, false);
+		if (linkType == null) {
+			throw new IllegalArgumentException(String.format("Unsupported link type: %s", linkTypeName));
 		}
 		
-		String templateName = context.resolveVar("currentStep.action.config.name", "${barcode}");
-		templateName = context.resolveVars(templateName);
+		Long targetId = null;
 		
-		List<PlateTemplateDTO> templates = plateServiceClient.getPlateTemplatesByName(templateName);
-		if (templates.isEmpty()) {
-			throw new RuntimeException(
-				String.format("Cannot link plate definition: no definition found in source '%s' with name '%s'", source, templateName));
-		} else if (templates.size() > 1) {
-			throw new RuntimeException(
-					String.format("Cannot link plate definition: multiple definitions found in source '%s' with name '%s'", source, templateName));
+		if (linkType == LinkType.Template) {
+			String templateName = context.resolveVar("currentStep.action.config.name", "${barcode}");
+			templateName = context.resolveVars(templateName);
+		
+			List<PlateTemplate> templates = plateDefinitionServiceClient.getPlateTemplatesByName(templateName);
+			if (templates.isEmpty()) {
+				throw new RuntimeException(
+					String.format("Cannot link plate definition: no definition found in source '%s' with name '%s'", linkTypeName, templateName));
+			} else if (templates.size() > 1) {
+				throw new RuntimeException(
+						String.format("Cannot link plate definition: multiple definitions found in source '%s' with name '%s'", linkTypeName, templateName));
+			}
+			targetId = templates.get(0).getId();
+		} else if (linkType == LinkType.PlateDefinition) {
+			Number sourceId = getRequiredVar("currentStep.action.config.id", context, null);
+			targetId = sourceId.longValue();
 		}
-		Long templateId = templates.get(0).getId();
 		
-		String msgToPost = String.format("{ \"plateId\": %d, \"templateId\": %d }", plateId, templateId);
+		String msgToPost = String.format("{ \"plateId\": %d, \"linkType\": \"%s\", \"targetId\": %d }", plateId, linkType.name(), targetId);
 		return EventDescriptor.of(TOPIC, EVENT_REQ_PLATE_DEF_LINK, msgToPost);
 	}
 	
