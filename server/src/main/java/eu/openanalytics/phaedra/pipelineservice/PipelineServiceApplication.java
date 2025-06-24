@@ -37,6 +37,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import eu.openanalytics.phaedra.measurementservice.client.config.MeasurementServiceClientAutoConfiguration;
 import eu.openanalytics.phaedra.metadataservice.client.config.MetadataServiceClientAutoConfiguration;
+import eu.openanalytics.phaedra.platedef.client.PlateDefinitionServiceClientAutoConfig;
 import eu.openanalytics.phaedra.plateservice.client.config.PlateServiceClientAutoConfiguration;
 import eu.openanalytics.phaedra.util.PhaedraRestTemplate;
 import eu.openanalytics.phaedra.util.auth.AuthenticationConfigHelper;
@@ -54,6 +55,7 @@ import io.swagger.v3.oas.models.servers.Server;
 @EnableWebSecurity
 @Import({
     PlateServiceClientAutoConfiguration.class,
+    PlateDefinitionServiceClientAutoConfig.class,
     MetadataServiceClientAutoConfiguration.class,
     MeasurementServiceClientAutoConfiguration.class
 })
