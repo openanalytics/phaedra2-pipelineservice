@@ -20,12 +20,20 @@
  */
 package eu.openanalytics.phaedra.pipelineservice.service;
 
+import eu.openanalytics.phaedra.metadataservice.client.MetadataServiceGraphQlClient;
+import eu.openanalytics.phaedra.metadataservice.dto.MetadataDTO;
+import eu.openanalytics.phaedra.metadataservice.dto.TagDTO;
+import eu.openanalytics.phaedra.metadataservice.dto.PropertyDTO;
+import eu.openanalytics.phaedra.metadataservice.enumeration.ObjectClass;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
@@ -47,6 +55,8 @@ public class PipelineDefinitionService {
 
 	@Autowired
 	private PipelineDefinitionRepo pipelineDefinitionRepo;
+	@Autowired
+	private MetadataServiceGraphQlClient metadataServiceGraphQlClient;
 
 	@Autowired
 	private IAuthorizationService authService;
@@ -54,7 +64,7 @@ public class PipelineDefinitionService {
 	private List<PipelineDefinitionChangeListener> changeListeners = new ArrayList<>();
 
 	private ModelMapper modelMapper = new ModelMapper();
-	
+
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	@EventListener(ApplicationReadyEvent.class)
@@ -89,6 +99,7 @@ public class PipelineDefinitionService {
 		for (PipelineDefinition def: pipelineDefinitionRepo.findAll()) {
 			if (filter == null || filter.test(def)) matches.add(def);
 		}
+		enrichWithMetadata(matches);
 		return matches;
 	}
 
@@ -167,9 +178,36 @@ public class PipelineDefinitionService {
 		}
 	}
 
+	private void enrichWithMetadata(List<PipelineDefinition> pipelineDefinitions) {
+		if (CollectionUtils.isNotEmpty(pipelineDefinitions)) {
+			Map<Long, PipelineDefinition> pipelineDefinitionMap = new HashMap<>();
+			List<Long> pipelineDefinitionIds = new ArrayList<>(pipelineDefinitions.size());
+			for (PipelineDefinition pipelineDefinition : pipelineDefinitions) {
+				pipelineDefinitionMap.put(pipelineDefinition.getId(), pipelineDefinition);
+				pipelineDefinitionIds.add(pipelineDefinition.getId());
+			}
+
+			List<MetadataDTO> pipelineDefinitionMetadataList = metadataServiceGraphQlClient
+					.getMetadata(pipelineDefinitionIds, ObjectClass.PIPELINE);
+
+			for (MetadataDTO metadata : pipelineDefinitionMetadataList) {
+				PipelineDefinition pipelineDefinition = pipelineDefinitionMap.get(metadata.getObjectId());
+				if (pipelineDefinition != null) {
+					pipelineDefinition.setTags(metadata.getTags().stream()
+							.map(TagDTO::getTag)
+							.toList());
+					List<PropertyDTO> propertyDTOs = new ArrayList<>(metadata.getProperties().size());
+					for (PropertyDTO property : metadata.getProperties()) {
+						propertyDTOs.add(property);
+					}
+					pipelineDefinition.setProperties(propertyDTOs);
+				}
+			}
+		}
+	}
+
 	public static class PipelineDefinitionChangeListener {
 		public void onStatusChanged(PipelineDefinition def) {}
 		public void onConfigChanged(PipelineDefinition def) {}
 	}
-
 }
