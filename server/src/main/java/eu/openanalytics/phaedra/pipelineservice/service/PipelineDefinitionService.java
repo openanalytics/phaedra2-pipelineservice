@@ -20,6 +20,8 @@
  */
 package eu.openanalytics.phaedra.pipelineservice.service;
 
+import static org.apache.commons.collections4.CollectionUtils.*;
+
 import eu.openanalytics.phaedra.metadataservice.client.MetadataServiceGraphQlClient;
 import eu.openanalytics.phaedra.metadataservice.dto.MetadataDTO;
 import eu.openanalytics.phaedra.metadataservice.dto.TagDTO;
@@ -80,11 +82,18 @@ public class PipelineDefinitionService {
 	}
 
 	public Optional<PipelineDefinition> findById(long id) {
-		return pipelineDefinitionRepo.findById(id);
+		Optional<PipelineDefinition> def = pipelineDefinitionRepo.findById(id);
+		if (def.isPresent()) {
+			enrichWithMetadata(List.of(def.get()));
+			return def;
+		}
+		return def;
 	}
 
 	public List<PipelineDefinition> findByName(String name) {
-		return pipelineDefinitionRepo.findAllByName(name);
+		List<PipelineDefinition> result = pipelineDefinitionRepo.findAllByName(name);
+		enrichWithMetadata(result);
+		return result;
 	}
 
 	public Optional<PipelineDefinition> findFirst(Predicate<PipelineDefinition> filter) {
@@ -179,7 +188,7 @@ public class PipelineDefinitionService {
 	}
 
 	private void enrichWithMetadata(List<PipelineDefinition> pipelineDefinitions) {
-		if (CollectionUtils.isNotEmpty(pipelineDefinitions)) {
+		if (isNotEmpty(pipelineDefinitions)) {
 			Map<Long, PipelineDefinition> pipelineDefinitionMap = new HashMap<>();
 			List<Long> pipelineDefinitionIds = new ArrayList<>(pipelineDefinitions.size());
 			for (PipelineDefinition pipelineDefinition : pipelineDefinitions) {
