@@ -10,4 +10,15 @@
 	<artifactId>phaedra2-pipelineservice-dto</artifactId>
 	<name>phaedra2-pipelineservice-dto</name>
 
+	<properties>
+    <phaedra2-metadataservice-client.version>2.9.0-SNAPSHOT</phaedra2-metadataservice-client.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>eu.openanalytics.phaedra</groupId>
+			<artifactId>phaedra2-metadataservice-client</artifactId>
+			<version>${phaedra2-metadataservice-client.version}</version>
+		</dependency>
+	</dependencies>
+
 </project>

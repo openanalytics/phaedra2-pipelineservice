@@ -32,11 +32,11 @@
 			<artifactId>phaedra2-plateservice-client</artifactId>
 			<version>${phaedra2-plateservice-client.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>eu.openanalytics.phaedra</groupId>
-            <artifactId>phaedra2-platedefinitionservice-client</artifactId>
-            <version>${phaedra2-platedefinitionservice-client.version}</version>
-        </dependency>
+		<dependency>
+				<groupId>eu.openanalytics.phaedra</groupId>
+				<artifactId>phaedra2-platedefinitionservice-client</artifactId>
+				<version>${phaedra2-platedefinitionservice-client.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>eu.openanalytics.phaedra</groupId>
 			<artifactId>phaedra2-measurementservice-client</artifactId>
