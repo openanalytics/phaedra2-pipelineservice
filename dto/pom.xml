@@ -4,14 +4,14 @@
 	<parent>
 	    <groupId>eu.openanalytics.phaedra</groupId>
 	    <artifactId>phaedra2-pipelineservice</artifactId>
-	    <version>2.9.0-SNAPSHOT</version>
+	    <version>2.9.0</version>
 	</parent>
 
 	<artifactId>phaedra2-pipelineservice-dto</artifactId>
 	<name>phaedra2-pipelineservice-dto</name>
 
 	<properties>
-    <phaedra2-metadataservice-client.version>2.9.0-SNAPSHOT</phaedra2-metadataservice-client.version>
+    <phaedra2-metadataservice-client.version>2.9.0</phaedra2-metadataservice-client.version>
 	</properties>
 	<dependencies>
 		<dependency>
